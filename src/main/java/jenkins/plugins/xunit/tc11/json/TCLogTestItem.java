@@ -20,52 +20,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package jenkins.plugins.xunit.tc11.json;
 
-import java.util.List;
-import org.json.JSONArray;
-import org.json.JSONObject;
+package jenkins.plugins.xunit.tc11.json;
 
 /**
  *
- * @author mgaert
+ * @author mgaertner
  */
-class TCLogItem {
 
-  private String name_;
-  private int status_;
-  private String id_;
-  private List<TCLogTestItem> providers_;
 
-  public TCLogItem(String id, String name, int status, JSONArray providers) {
-    this.id_ = id;
-    this.name_ = name;
-    this.status_ = status;
-    //this.providers_ = providers;
-    //TODO fetch content of href if not empty
-  }
-
-  public TCLogItem(JSONObject obj) {
-    if (obj.has("name")) {
-      this.name_ = obj.getString("name");
-    } else {
-      this.name_ = "";
-    }
-    if (obj.has("status")) {
-      this.status_ = obj.getInt("status");
-    } else {
-      this.status_ = 0;
-    }
-    if (obj.has("providers")) {
-      JSONArray jSArray = obj.getJSONArray("providers");
-      //TODO fetch content of href
-    } else {
-      this.providers_ = null;
-    }
-    if (obj.has("id")) {
-      this.id_ = obj.getString("id");
-    } else {
-      this.id_ = "";
-    }
-  }
+public class TCLogTestItem {
+  
 }
