@@ -26,7 +26,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -51,7 +50,7 @@ import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 
 import jenkins.plugins.xunit.tc11.json.JSONUtil;
-import jenkins.plugins.xunit.tc11.json.TCLogTree;
+import jenkins.plugins.xunit.tc11.json.TCLog;
 
 import jenkins.plugins.xunit.tc11.mht.*;
 import org.jenkinsci.lib.dtkit.util.validator.ValidationException;
@@ -83,14 +82,12 @@ public class TestCompleteInputMetric extends InputMetric {
   private final static String INTERNAL_PARAM_BASE_PATH = "basePath";
 
   /**
-   * Parameter that defines the regular expression to apply to transformation so
-   * only those tests matching it will be included
+   * Parameter that defines the regular expression to apply to transformation so only those tests matching it will be included
    */
   public final static String PARAM_TEST_PATTERN = "testPattern";
 
   /**
-   * Pattern provided by the user to apply a filtering to the tests results (we
-   * may only want to filter out some tests from the results such as start-up or
+   * Pattern provided by the user to apply a filtering to the tests results (we may only want to filter out some tests from the results such as start-up or
    * tear-down type tests).
    */
   private String testFilterPattern = "";
@@ -118,30 +115,25 @@ public class TestCompleteInputMetric extends InputMetric {
   public OutputMetric getOutputFormatType() {
     return JUnitModel.LATEST;
   }
+
   /**
-  * Log an info output to the system logger
-  *
-  * @param message The message to be outputted
-  */
-  protected void infoSystemLogger(String message) {
-    LOGGER.info("[TC11 - xUnit] - " + message);
-  }
-  /**
-   * This method extracts all XML files inside a MHT file produced by
-   * TestComplete/TestExecute into a temporary directory and returns a reference
-   * to such directory.
+   * Log an info output to the system logger
    *
-   * @param inputFile
-   *          MHT file to process
-   * @param params
-   *          map where parameter with key "baseUrl" and value returned by
-   *          {@link MHTInputStream#getBaseUrl()} is added
-   * @return temporary file that contains all the extracted XML files from input
-   *         MHT file
-   * @throws MHTException
-   *           if and MHT error occurs
-   * @throws IOException
-   *           if an I/O error ocurrs
+   * @param message The message to be outputted
+   */
+  protected void infoSystemLogger(String message) {
+    LOGGER.log(Level.INFO, "[TC11 - xUnit] - {0}", message);
+  }
+
+  /**
+   * This method extracts all XML files inside a MHT file produced by TestComplete/TestExecute into a temporary directory and returns a reference to such
+   * directory.
+   *
+   * @param inputFile MHT file to process
+   * @param params map where parameter with key "baseUrl" and value returned by {@link MHTInputStream#getBaseUrl()} is added
+   * @return temporary file that contains all the extracted XML files from input MHT file
+   * @throws MHTException if and MHT error occurs
+   * @throws IOException if an I/O error ocurrs
    */
   private File extractFilesFromMHTFile(File inputFile, Map<String, Object> params) throws IOException {
     File tempDir = Files.createTempDir();
@@ -158,9 +150,9 @@ public class TestCompleteInputMetric extends InputMetric {
         params.put(INTERNAL_PARAM_BASE_PATH, FilenameUtils.normalize(tempDir.getAbsolutePath(), true));
       }
 
-      MHTEntry entry = null;
+      MHTEntry entry;
       byte buffer[] = new byte[1024];
-      int readBytes = 0;
+      int readBytes;
 
       while ((entry = mis.getNextEntry()) != null) {
         if (CONTENT_TYPE_JAVASCRIPT.equals(entry.getContentType()) && entry.getName().startsWith("_")) {
@@ -204,7 +196,7 @@ public class TestCompleteInputMetric extends InputMetric {
       Collection<File> jsFiles = FileUtils.listFiles(inputTempDir, FileFilterUtils.nameFileFilter("_root.js"), null);
       if (jsFiles.isEmpty()) {
         throw new ConversionException(
-            "Invalid TestComplete MHT file '" + inputFile.getName() + "'. No '_root.js' found.");
+          "Invalid TestComplete MHT file '" + inputFile.getName() + "'. No '_root.js' found.");
       }
 
       File rootJS = jsFiles.iterator().next();
@@ -222,12 +214,11 @@ public class TestCompleteInputMetric extends InputMetric {
            * test names.
            */
           throw new ConversionException("Invalid test filter pattern provided '" + this.testFilterPattern
-              + "'. Start (^) and end ($) line pattern symbols are not allowed.");
+            + "'. Start (^) and end ($) line pattern symbols are not allowed.");
         }
-        
-        
+
         infoSystemLogger("Applying test filter pattern '" + this.testFilterPattern + "' to TestComplete test: " + inputFile.getName());
-        
+
         conversionParams.put(PARAM_TEST_PATTERN, this.testFilterPattern);
       }
 
@@ -246,54 +237,46 @@ public class TestCompleteInputMetric extends InputMetric {
     }
   }
 
-  private void convertJson(File jsonFile, File outFile) {
+  private void convertJson(File inputFile, File outFile) {
 
-    String fileContent = null;
     String jsonRaw = null;
     try {
-      fileContent = JSONUtil.readJSONFile(jsonFile, "UTF-8");
+      String fileContent = JSONUtil.readJSONFile(inputFile, "UTF-8");
       int start = fileContent.indexOf('(');
       int end = fileContent.indexOf(')');
-      fileContent = fileContent.substring(start+1, end);
-     
-      jsonRaw = fileContent.substring(fileContent.indexOf(',')+1);
-      
-      
+      fileContent = fileContent.substring(start + 1, end);
+
+      jsonRaw = fileContent.substring(fileContent.indexOf(',') + 1);
+
     } catch (FileNotFoundException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      throw new ConversionException("File '" + inputFile.getName() + "' not found.");
     } catch (IOException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
+      throw new ConversionException("File '" + inputFile.getName() + "' can not be read.");
     }
 
     // setting optional arguments
     // jsonType = options.jsonType || 'mochawesome';
-
     // junitXml = fs.openSync(junitPath, 'w');
-
     if ((jsonRaw != null) && (!jsonRaw.trim().isEmpty())) {
       JSONObject jsonData = new JSONObject(jsonRaw);
       infoSystemLogger(jsonData.get("name").toString());
-      TCLogTree tcLogTree;
-      tcLogTree = new TCLogTree(jsonData);
+      TCLog tcLog;
+      tcLog = new TCLog(jsonData);
       FileWriter fw;
       try {
         fw = new FileWriter(outFile);
         try {
           fw.write("<testsuites name=\"" + jsonData.getString("name") + "\">\n");
-          
-          
+
           fw.write("<testsuite");
           fw.write(" name=\"" + htmlEscape(jsonData.getString("name")) + "\"");
-    // writeString(' tests="' + testCount + '"');
-    // writeString(' failures="' + failures + '"');
-    // writeString(' skipped="' + skips + '"');
-    // writeString(' timestamp="' + dateTimestamp.toUTCString() + '"');
-    // writeString(' time="' + (duration / 1000) + '"');
+          // writeString(' tests="' + testCount + '"');
+          // writeString(' failures="' + failures + '"');
+          // writeString(' skipped="' + skips + '"');
+          // writeString(' timestamp="' + dateTimestamp.toUTCString() + '"');
+          // writeString(' time="' + (duration / 1000) + '"');
           fw.write(">\n");
-    
-          
+
           fw.write("</testsuite>\n");
           fw.write("</testsuites>\n");
         } finally {
@@ -304,7 +287,7 @@ public class TestCompleteInputMetric extends InputMetric {
       } catch (IOException ex) {
         Logger.getLogger(TestCompleteInputMetric.class.getName()).log(Level.SEVERE, null, ex);
       }
-      
+
     }
 
     // Formatting start time to javascript date then extracting milliseconds
@@ -389,20 +372,20 @@ public class TestCompleteInputMetric extends InputMetric {
     // console.log("Unable to parse json file.");
     // }
   }
-  
+
   /*
-    private void writeString(String str) { 
-      if (junitXml) { 
-         var buf = new Buffer(str); 
-         fs.writeSync(junitXml, buf, 0, buf.length, null); 
-      } 
+    private void writeString(String str) {
+      if (junitXml) {
+         var buf = new Buffer(str);
+         fs.writeSync(junitXml, buf, 0, buf.length, null);
+      }
     }
    */
-  private String htmlEscape(String str) { 
-    return str.replaceAll("&","&amp;").replaceAll("\"", "&quot;").replaceAll("'", "&#39;").replaceAll("<","&lt;").replaceAll(">", "&gt;"); 
+  private String htmlEscape(String str) {
+    return str.replaceAll("&", "&amp;").replaceAll("\"", "&quot;").replaceAll("'", "&#39;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
   }
-   
-   /* function escapeInvisibles(line) { return line.replace(/\t/g, '<tab>')
+
+  /* function escapeInvisibles(line) { return line.replace(/\t/g, '<tab>')
    * .replace(/\r/g, '<CR>') .replace(/\n/g, '<LF>\n'); }
    *
    * function cleanUp(line) { if (line.match(/\@\@/)) return null; if
@@ -434,7 +417,6 @@ public class TestCompleteInputMetric extends InputMetric {
    *
    * return msg; }
    */
-
   @Override
   public boolean validateInputFile(File inputXMLFile) throws ValidationException {
     return getInputValidationErrors().isEmpty();
@@ -443,34 +425,35 @@ public class TestCompleteInputMetric extends InputMetric {
   @Override
   public boolean validateOutputFile(File inputXMLFile) throws ValidationException {
     //If no format is specified, exit validation and returns true
-        if (this.getOutputFormatType() == null) {
-            return true;
-        }
-
-        //If there no given xsd, exit validation and returns true
-        if (this.getOutputXsdNameList() == null) {
-            return true;
-        }
-
-        //Validate given XSD
-        Source[] sources = new Source[getOutputXsdNameList().length];
-        for (int i = 0; i < sources.length; i++) {
-            sources[i] = new StreamSource(this.getOutputFormatType().getClass().getResourceAsStream(getOutputXsdNameList()[i]));
-        }
-
-        ValidationService validationService = new ValidationService();
-        setOutputValidationErrors(validationService.processValidation(sources, inputXMLFile));
-        return getOutputValidationErrors().isEmpty();
-  }
-  /**
-     * the XSD file associated to this output format
-     *
-     * @return the relative xsd path. Can be null if there no XSD for the output format
-     */
-    public String[] getOutputXsdNameList() {
-        if (getOutputFormatType() == null) {
-            return null;
-        }
-        return getOutputFormatType().getXsdNameList();
+    if (this.getOutputFormatType() == null) {
+      return true;
     }
+
+    //If there no given xsd, exit validation and returns true
+    if (this.getOutputXsdNameList() == null) {
+      return true;
+    }
+
+    //Validate given XSD
+    Source[] sources = new Source[getOutputXsdNameList().length];
+    for (int i = 0; i < sources.length; i++) {
+      sources[i] = new StreamSource(this.getOutputFormatType().getClass().getResourceAsStream(getOutputXsdNameList()[i]));
+    }
+
+    ValidationService validationService = new ValidationService();
+    setOutputValidationErrors(validationService.processValidation(sources, inputXMLFile));
+    return getOutputValidationErrors().isEmpty();
+  }
+
+  /**
+   * the XSD file associated to this output format
+   *
+   * @return the relative xsd path. Can be null if there no XSD for the output format
+   */
+  public String[] getOutputXsdNameList() {
+    if (getOutputFormatType() == null) {
+      return null;
+    }
+    return getOutputFormatType().getXsdNameList();
+  }
 }

@@ -1,11 +1,29 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * The MIT License
+ * Copyright (c) 2017 Michael Gärtner and all contributors
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 package jenkins.plugins.xunit.tc11.json;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -20,94 +38,83 @@ public class TCLog {
   private Integer status_;
   private String href_;
   private String id_;
-  private String schemaType_;
   private List<TCLog> children_;
   private List<TCLog> providers_;
-  private String activeProviderName_;
   private boolean empty_;
+  private List<TCLogItem> tcLogItems_ = null;
+  private List<JSONObject> jsLogItems_ = null;
+  private JSONObject rootObj_ = null;
+  private TCLog tcLogRoot_ = null;
 
-  public boolean isEmpty() {
-    return empty_;
+  public TCLog(JSONObject obj) {
+    this.rootObj_ = obj;
+    initialize(obj);
   }
-  
-  TCLog(JSONObject obj) {
-    this.setTCLog(obj);
-  }
-  public void setTCLog(JSONObject obj){
-    if(obj.has("name")){
+
+  private void initialize(JSONObject obj) {
+    if (obj.has("name")) {
       this.name_ = obj.getString("name");
     } else {
       this.name_ = "";
     }
-    if(obj.has("status")){
+    if (obj.has("status")) {
       this.status_ = obj.getInt("status");
     } else {
       this.status_ = 0;
     }
-    if(obj.has("href")){
+    if (obj.has("href")) {
       this.href_ = obj.getString("href");
     } else {
       this.href_ = "";
     }
-    if(obj.has("id")){
+    if (obj.has("id")) {
       this.id_ = obj.getString("id");
     } else {
       this.id_ = "";
     }
-    if(obj.has("schemaType")){
-      this.schemaType_ = obj.getString("schemaType");
-    } else {
-      this.schemaType_ = "none";
-    }
-    this.children_ = new ArrayList<TCLog>();
-    if(obj.has("children")){
-      JSONArray jsonArray = obj.getJSONArray("children");
-      for (int i = 0, size = jsonArray.length(); i < size; i++)
-      {
-        JSONObject js;
-        js = jsonArray.optJSONObject(i);
-        TCLog tcLog;
-        tcLog = new TCLog(js);
-        this.children_.add(tcLog);
 
-      }
+    this.jsLogItems_ = new ArrayList<JSONObject>();
+    this.tcLogItems_ = new ArrayList<TCLogItem>();
+    lookForJSONObjectsByName(obj, "Test Log");
+    for (Iterator<JSONObject> it = this.jsLogItems_.iterator(); it.hasNext();) {
+      this.addTCLogItem(new TCLogItem(it.next()));
     }
+    /*
     this.providers_ = new ArrayList<TCLog>();
-    if(obj.has("providers")){
+    if (obj.has("providers")) {
       JSONArray jsonArray = obj.getJSONArray("providers");
 
-      for (int i = 0, size = jsonArray.length(); i < size; i++)
-      {
+      for (int i = 0, size = jsonArray.length(); i < size; i++) {
         this.providers_.add(new TCLog(jsonArray.getJSONObject(i)));
 
       }
-    }
-    this.activeProviderName_ = "";
-    
-    int summary_index = -1;
-    int perfcounters_index = -1;
-
-    TCLog[] providers = (TCLog[])this.getProviders().toArray();
-    for (int i = 0; i < providers.length; i++)
-    {		
-      String provider_name = providers[i].getName().toLowerCase();
-      if (provider_name.contains("summary")){
-        summary_index = i;
+    }*/
+ /*
+    for (Iterator<TCLog> it = this.getChildren().iterator(); it.hasNext();) {
+      TCLog child = it.next();
+      String child_name = child.getName();
+      if (child_name.contains("Test Log")) {
+        this.addTCLogItem(new TCLogItem(child.getId(), child.getName(), child.getStatus()));
       }
-      if (providers[i].getSchemaType().equals("aqds:table") && provider_name.contains("performance counters")){
-        perfcounters_index = i;
-      }
-    }
+    }*/
 
-    if (summary_index > 0) // put summary first
-       providers = ArrayUtil.splice(providers, 0, 0, ArrayUtil.splice(providers,summary_index, 1)[0]);
-
-    if (perfcounters_index == 1 && providers[0].getSchemaType().equals("aqds:tree")){
-      // move perf counters to children of first provider
-      providers[0].addChildren(ArrayUtil.splice(providers,perfcounters_index, 1)[0]);
-    }
-    this.empty_ = this.children_.isEmpty();
+    this.empty_ = this.tcLogItems_.isEmpty();
   }
+
+  private void lookForJSONObjectsByName(JSONObject obj, String name) {
+
+    JSONArray jsonArray = obj.getJSONArray("children");
+    for (int i = 0, size = jsonArray.length(); i < size; i++) {
+      JSONObject js;
+      js = jsonArray.optJSONObject(i);
+      if (js.has("name") && js.getString("name").contains(name)) {
+        this.jsLogItems_.add(js);
+      } else {
+        lookForJSONObjectsByName(js, name);
+      }
+    }
+  }
+
   /**
    * Get the value of name
    *
@@ -125,7 +132,7 @@ public class TCLog {
   public void setName(String name) {
     this.name_ = name;
   }
-  
+
   public Integer getStatus() {
     return status_;
   }
@@ -150,14 +157,6 @@ public class TCLog {
     this.id_ = id;
   }
 
-  public String getSchemaType() {
-    return schemaType_;
-  }
-
-  public void setSchemaType(String schemaType) {
-    this.schemaType_ = schemaType;
-  }
-
   public List<TCLog> getChildren() {
     return children_;
   }
@@ -165,9 +164,11 @@ public class TCLog {
   public void setChildren(List<TCLog> children) {
     this.children_ = children;
   }
+
   public TCLog getProvider(int index) {
     return providers_.get(index);
   }
+
   public List<TCLog> getProviders() {
     return providers_;
   }
@@ -176,15 +177,29 @@ public class TCLog {
     this.providers_ = providers;
   }
 
-  public String getActiveProviderName() {
-    return activeProviderName_;
-  }
-
-  public void setActiveProviderName(String activeProviderName) {
-    this.activeProviderName_ = activeProviderName;
-  }
-
   void addChildren(TCLog tcLog) {
     this.children_.add(tcLog);
+  }
+
+  public TCLogItem getTCLogItem(int index) {
+    TCLogItem tcLogItem = null;
+    if (!this.tcLogItems_.isEmpty() && index >= 0 && index < this.tcLogItems_.size()) {
+      tcLogItem = tcLogItems_.get(index);
+    }
+    return tcLogItem;
+  }
+
+  public List<TCLogItem> getTCLogItems() {
+    return this.tcLogItems_;
+  }
+
+  private void addTCLogItem(TCLogItem tcLogItem) {
+    if (this.tcLogItems_ != null) {
+      this.tcLogItems_.add(tcLogItem);
+    }
+  }
+
+  public boolean isEmpty() {
+    return empty_;
   }
 }
