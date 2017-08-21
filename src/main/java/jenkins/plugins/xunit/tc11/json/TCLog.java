@@ -22,6 +22,7 @@
  */
 package jenkins.plugins.xunit.tc11.json;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -43,11 +44,11 @@ public class TCLog {
   private boolean empty_;
   private List<TCLogItem> tcLogItems_ = null;
   private List<JSONObject> jsLogItems_ = null;
-  private JSONObject rootObj_ = null;
   private TCLog tcLogRoot_ = null;
+  private final File tempDir_;
 
-  public TCLog(JSONObject obj) {
-    this.rootObj_ = obj;
+  public TCLog(JSONObject obj, File inputTempDir) {
+    this.tempDir_ = inputTempDir;
     initialize(obj);
   }
 
@@ -75,29 +76,10 @@ public class TCLog {
 
     this.jsLogItems_ = new ArrayList<JSONObject>();
     this.tcLogItems_ = new ArrayList<TCLogItem>();
-    lookForJSONObjectsByName(obj, "Test Log");
+    lookForJSONObjectsByName(obj, "TestItem");
     for (Iterator<JSONObject> it = this.jsLogItems_.iterator(); it.hasNext();) {
-      this.addTCLogItem(new TCLogItem(it.next()));
+      this.addTCLogItem(new TCLogItem(it.next(), this.tempDir_));
     }
-    /*
-    this.providers_ = new ArrayList<TCLog>();
-    if (obj.has("providers")) {
-      JSONArray jsonArray = obj.getJSONArray("providers");
-
-      for (int i = 0, size = jsonArray.length(); i < size; i++) {
-        this.providers_.add(new TCLog(jsonArray.getJSONObject(i)));
-
-      }
-    }*/
- /*
-    for (Iterator<TCLog> it = this.getChildren().iterator(); it.hasNext();) {
-      TCLog child = it.next();
-      String child_name = child.getName();
-      if (child_name.contains("Test Log")) {
-        this.addTCLogItem(new TCLogItem(child.getId(), child.getName(), child.getStatus()));
-      }
-    }*/
-
     this.empty_ = this.tcLogItems_.isEmpty();
   }
 
@@ -201,5 +183,28 @@ public class TCLog {
 
   public boolean isEmpty() {
     return empty_;
+  }
+
+  public int testCount() {
+    int count = 0;
+    if (!this.isEmpty()) {
+      for (Iterator<TCLogItem> it = this.getTCLogItems().iterator(); it.hasNext();) {
+        TCLogItem item = it.next();
+        count += item.getTCLogTestItems().size();
+      }
+    }
+    return count;
+  }
+
+  public String getFailures() {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  public String getSkipCount() {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  public Object getTimestamp() {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 }

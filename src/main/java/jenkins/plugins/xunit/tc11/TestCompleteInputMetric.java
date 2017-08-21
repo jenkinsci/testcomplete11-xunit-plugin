@@ -46,11 +46,13 @@ import org.json.JSONObject;
 
 import com.google.common.io.Files;
 import java.io.FileWriter;
+import java.util.Iterator;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 
 import jenkins.plugins.xunit.tc11.json.JSONUtil;
 import jenkins.plugins.xunit.tc11.json.TCLog;
+import jenkins.plugins.xunit.tc11.json.TCLogItem;
 
 import jenkins.plugins.xunit.tc11.mht.*;
 import org.jenkinsci.lib.dtkit.util.validator.ValidationException;
@@ -222,22 +224,22 @@ public class TestCompleteInputMetric extends InputMetric {
         conversionParams.put(PARAM_TEST_PATTERN, this.testFilterPattern);
       }
 
-      this.convertJson(rootJS, outFile);
+      this.convertJson(inputTempDir, rootJS, outFile);
     } catch (IOException e) {
       throw new ConversionException("Errors parsing input MHT file '" + inputFile.getName() + "'", e);
     } finally {
 
-      if (inputTempDir != null) {
-        try {
-          FileUtils.deleteDirectory(inputTempDir);
-        } catch (IOException e) {
-
-        }
-      }
+//      if (inputTempDir != null) {
+//        try {
+//          FileUtils.deleteDirectory(inputTempDir);
+//        } catch (IOException e) {
+//
+//        }
+//      }
     }
   }
 
-  private void convertJson(File inputFile, File outFile) {
+  private void convertJson(File inputTempDir, File inputFile, File outFile) {
 
     String jsonRaw = null;
     try {
@@ -254,30 +256,30 @@ public class TestCompleteInputMetric extends InputMetric {
       throw new ConversionException("File '" + inputFile.getName() + "' can not be read.");
     }
 
-    // setting optional arguments
-    // jsonType = options.jsonType || 'mochawesome';
-    // junitXml = fs.openSync(junitPath, 'w');
     if ((jsonRaw != null) && (!jsonRaw.trim().isEmpty())) {
       JSONObject jsonData = new JSONObject(jsonRaw);
       infoSystemLogger(jsonData.get("name").toString());
       TCLog tcLog;
-      tcLog = new TCLog(jsonData);
+      tcLog = new TCLog(jsonData, inputTempDir);
       FileWriter fw;
       try {
         fw = new FileWriter(outFile);
         try {
           fw.write("<testsuites name=\"" + jsonData.getString("name") + "\">\n");
+          if (!tcLog.isEmpty()) {
+            for (Iterator<TCLogItem> it = tcLog.getTCLogItems().iterator(); it.hasNext();) {
+              fw.write("<testsuite");
+              fw.write(" name=\"" + htmlEscape(tcLog.getName()) + "\"");
+              fw.write(" tests=\"" + tcLog.testCount() + "\"");
+              fw.write(" failures=\"" + tcLog.getFailures() + "\"");
+              fw.write(" skipped=\"" + tcLog.getSkipCount() + "\"");
+              //fw.write(" timestamp=\"" + tcLog.getTimestamp().toUTCString() + "\"");
+              //fw.write(" time=\"" + (duration / 1000) + "\"");
+              fw.write(">\n");
 
-          fw.write("<testsuite");
-          fw.write(" name=\"" + htmlEscape(jsonData.getString("name")) + "\"");
-          // writeString(' tests="' + testCount + '"');
-          // writeString(' failures="' + failures + '"');
-          // writeString(' skipped="' + skips + '"');
-          // writeString(' timestamp="' + dateTimestamp.toUTCString() + '"');
-          // writeString(' time="' + (duration / 1000) + '"');
-          fw.write(">\n");
-
-          fw.write("</testsuite>\n");
+              fw.write("</testsuite>\n");
+            }
+          }
           fw.write("</testsuites>\n");
         } finally {
           fw.close();
