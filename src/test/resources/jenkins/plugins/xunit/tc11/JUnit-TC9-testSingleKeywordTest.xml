@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:fo="http://www.w3.org/1999/XSL/Format"
+           xmlns:fn="http://www.w3.org/2005/xpath-functions"
+           xmlns:xdt="http://www.w3.org/2005/xpath-datatypes"
+           tests="1"
+           errors="0"
+           failures="1"
+           skipped="0"
+           name="Keyword Test Log [KT3]">
+   <testcase name="KT3">
+      <failure message="Error message"/>
+      <system-out><![CDATA[[2015-03-24 16:18:09] ** Error ** : Error message
+  Call Stack:
+    1: KT3()
+]]></system-out>
+   </testcase>
+</testsuite>

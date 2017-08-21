@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>Summary Report</title>
+<style>
+body{
+	font-weight : normal;
+	font-family : Segoe UI, Tahoma;
+	padding : 5px 10px 5px 5px;
+}
+p{
+	font-size : 80%;
+}
+td{
+	font-size : 80%;
+	text-align : left;
+}
+a{
+	color : #0000FF;
+}
+a:hover{
+	color : #3366FF;
+}
+a:visited{
+	color : #0000FF;
+}
+h2{
+	font-size : 100%;
+	border-bottom : 1px solid #8e8e8e;
+	margin: 20px 10px 5px 5px;
+	font-weight: normal;
+}
+h2 a, h2 a:visited{
+	text-decoration : none;
+	color : #8e8e8e;
+}
+h2 a:hover{
+	color : #444444;
+}
+.section{
+	margin : 0px 0px 0px 20px;
+}
+.testHeader p{
+	font-size : 120%;
+	margin : 0;
+	padding : 0;
+	line-height : 1.5;
+}
+.header2{
+	font-weight	: bold;
+	font-style	: normal;
+	padding-top	: 10px;
+}
+.resultImage{
+	width : 10ex;
+}
+.generalCellTitle{
+	width : 15ex;
+}
+.generalCellData{
+	width : 30ex;
+}
+.generalCellData2{
+	width : 30ex;
+	padding-left : 2ex;
+}
+.generalCellTitle2{
+	width : 16ex;
+	padding-left : 4ex;
+}
+.generalCellTitle3{
+	width : 10ex;
+	padding-left : 4ex;
+}
+.warningsNote{
+	font-size : 90%;
+}
+</style>
+<script language="JavaScript">
+function ShowHide(imgId, elemId)
+{
+  var img = document.getElementById(imgId);
+  if (img == null) return;
+  var elem = document.getElementById(elemId);
+  if (elem == null) return;
+  if (elem.style.display == "")
+  {
+  	img.src = "btn_plus.gif";
+  	elem.style.display = "none";
+  }
+  else
+  {
+  	img.src = "btn_minus.gif";
+  	elem.style.display = "";
+  }
+}
+function flashVersion() {
+  try {
+    try {
+      var axo = new ActiveXObject('ShockwaveFlash.ShockwaveFlash.6');
+      try { axo.AllowScriptAccess = 'always'; }
+      catch(e) { return '6'; }
+    } catch(e) {}
+    return new ActiveXObject('ShockwaveFlash.ShockwaveFlash').GetVariable('$version').replace(/\D+/g, ',').match(/^,?(.+),?$/)[1];
+  } catch(e) {
+    try {
+      if(navigator.mimeTypes["application/x-shockwave-flash"].enabledPlugin){
+        return (navigator.plugins["Shockwave Flash 2.0"] || navigator.plugins["Shockwave Flash"]).description.replace(/\D+/g, ",").match(/^,?(.+),?$/)[1];
+      }
+    } catch(e) {}
+  }
+  return '0';
+}
+</script>
+</head>
+<body>
+<table>
+<tr>
+<td class="resultImage"><img src="ico_error.gif" width="48px" height="48px"/></td>
+<td class="testHeader"><p><b>Test:</b> JenkinsTC11 </p>
+<p><b>Result:</b> Error(s) occurred </p> </td>
+</tr>
+</table>
+<h2><a href="JavaScript:ShowHide('GeneralResults_Img', 'GeneralResults_Section');"><img src="btn_minus.gif" border="0" id="GeneralResults_Img"/>General</a></h2>
+<div id="GeneralResults_Section" class="section">
+<table>
+<tr><td class="generalCellTitle">Test started:</td><td class="generalCellData">10.01.2017 16:48:40</td><td class="generalCellTitle2">User:</td><td>mgaert</td></tr>
+<tr><td>Test stopped:</td><td class="generalCellData">10.01.2017 16:48:40</td><td class="generalCellTitle2">Computer:</td><td>PC2664</td></tr>
+<tr><td>Test duration:</td><td class="generalCellData">0,726 s</td><td></td><td></td></tr>
+</table>
+</div>
+<h2><a href="JavaScript:ShowHide('Details_Img', 'Details_Section');"><img src="btn_minus.gif" border="0" id="Details_Img"/>Details</a></h2>
+<div id="Details_Section" class="section">
+<table style="width: 50%;">
+<table style="width: 50%">
+<tr><td class="generalCellTitle"><nobr>Total number of project test items:</nobr></td><td class="generalCellData2">8</td></tr>
+<tr><td class="generalCellTitle"><nobr>Executed project test items:</nobr></td><td class="generalCellData2">8</td></tr>
+</table>
+<table style="width: 50%;">
+<tr><td colspan="2"><br/><b>Project Test Item Results</b></td></tr>
+<tr><td class="generalCellTitle3">Passed:</td><td class="generalCellData">6, <span class="warningsNote">including 2 warning(s)</span></td></tr>
+<tr><td class="generalCellTitle3">Failed:</td><td class="generalCellData">2</td></tr>
+</table>
+<canvas id="idChart" style="margin-top : 4ex" width="500" height="200"></canvas>
+<script type="text/javascript" src="piechart.js"></script>
+<script>
+var data = [ { "value": 2, "label1": "2 error(s)", "label2": "(25,00%)", "color": "#FF0000" }, { "value": 2, "label1": "2 warning(s)", "label2": "(25,00%)", "color": "#FFD700" }, { "value": 4, "label1": "4 success(es)", "label2": "(50,00%)", "color": "#008B00" }];
+var chart = new PieChart("idChart", data);
+</script>
+<p style="padding-left: 5px;"><a  href="#" onclick="return (parent.logtree_openSibling || logtree_openSibling)('Project Suite Log')">View detailed results &raquo;</a></p>
+</div>
+</body>
+</html>
