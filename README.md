@@ -1,8 +1,10 @@
-TestComplete xUnit Plugin
+TestComplete 11 xUnit Plugin
 -------------------------
 
-Jenkins Plugin that transforms TestComplete MHT test reports into xUnit format so they can be integrated with Jenkins' JUnit features.
+Still in developer state!!
+
+Jenkins Plugin that transforms TestComplete 11 and 12 MHT test reports into xUnit format so they can be integrated with Jenkins' JUnit features.
 
 It has been developed as a xUnit Plugin extension: https://wiki.jenkins-ci.org/display/JENKINS/xUnit+Plugin
 
-More details can be found at wiki site: http://wiki.jenkins-ci.org/display/JENKINS/TestComplete+xUnit+Plugin
+This plugin is an enhancement of the xUnit Plugin found at wiki site: http://wiki.jenkins-ci.org/display/JENKINS/TestComplete+xUnit+Plugin
