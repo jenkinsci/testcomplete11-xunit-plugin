@@ -22,9 +22,11 @@
  */
 package jenkins.plugins.xunit.tc11.json;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.json.JSONObject;
 
 /**
@@ -37,7 +39,7 @@ public class TCLogProviderItem {
   private String id_;
   private String startTime_;
   private String endTime_;
-  private String runTime_;
+  private int runTime_;
   private String testItemId_;
 
   /*
@@ -71,15 +73,20 @@ public class TCLogProviderItem {
       if (obj.has("StartTime")) {
         JSONObject startTime = obj.getJSONObject("StartTime");
         this.startTime_ = convertTc2DateTime(startTime.getString("text"), (startTime.getInt("msec") % 1000));
+      } else {
+        this.startTime_ = "";
       }
       if (obj.has("EndTime")) {
         JSONObject endTime = obj.getJSONObject("EndTime");
         this.endTime_ = convertTc2DateTime(endTime.getString("text"), (endTime.getInt("msec") % 1000));
+      } else {
+        this.endTime_ = "";
       }
       if (obj.has("RunTime")) {
         JSONObject runTime = obj.getJSONObject("RunTime");
-        Float time = new Float(runTime.getInt("msec") / 1000);
-        this.runTime_ = time.toString();
+        this.runTime_ = runTime.getInt("msec");
+      } else {
+        this.runTime_ = 0;
       }
     }
   }
@@ -93,27 +100,42 @@ public class TCLogProviderItem {
   }
 
   private String convertTc2DateTime(String inputDateTime, int inputMillis) {
-    DateTimeFormatter formatter = null;
+    SimpleDateFormat formatter = null;
     String dateTime = "";
-    if (inputDateTime.matches("[0-9]+/[0-9]+/[0-9]+ [0-9]+:[0-9]+:[0-9]+ PM|AM$")) {
-      formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy hh:mm:ss aa");
-    } else if (inputDateTime.matches("[0-9]+/[0-9]+/[0-9]+ [0-9]+:[0-9]+:[0-9]+$")) {
-      formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
-    } else if (inputDateTime.matches("[0-9]+\\.[0-9]+\\.[0-9]+ [0-9]+:[0-9]+:[0-9]+$")) {
-      formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy hh:mm:ss");
-    }
-    try {
-      LocalDateTime date = LocalDateTime.parse(inputDateTime, formatter);
-      dateTime = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm:ss"));
-      dateTime += "." + inputMillis;
-    } catch (DateTimeParseException exc) {
-
+    if (inputDateTime != null && !inputDateTime.isEmpty()) {
+      if (inputDateTime.matches("[0-9]+/[0-9]+/[0-9]+ [0-9]+:[0-9]+:[0-9]+ PM|AM$")) {
+        formatter = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss aa");
+      } else if (inputDateTime.matches("[0-9]+/[0-9]+/[0-9]+ [0-9]+:[0-9]+:[0-9]+$")) {
+        formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+      } else if (inputDateTime.matches("[0-9]+\\.[0-9]+\\.[0-9]+ [0-9]+:[0-9]+:[0-9]+$")) {
+        formatter = new SimpleDateFormat("dd.MM.yyyy hh:mm:ss");
+      }
+      if (formatter != null) {
+        try {
+          SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+          Date date = formatter.parse(inputDateTime);
+          if (date != null) {
+            dateTime = df.format(date);
+            dateTime += "." + inputMillis;
+          }
+        } catch (ParseException ex) {
+          Logger.getLogger(TCLogProviderItem.class.getName()).log(Level.SEVERE, null, ex);
+        }
+      }
     }
     return dateTime;
 
   }
 
-  String getTestItemId() {
+  public String getTestItemId() {
     return this.testItemId_;
+  }
+
+  public String getStartTime() {
+    return this.startTime_;
+  }
+
+  public int getRunTime() {
+    return this.runTime_;
   }
 }

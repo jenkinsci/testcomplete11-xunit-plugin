@@ -36,6 +36,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
+ * This Class represents in MHT _root.js a JSON Object matching "TestItem"
  *
  * @author mgaert
  */
@@ -166,4 +167,40 @@ public class TCLogItem {
     }
     return null;
   }
+
+  public int getTestCount() {
+    int count = this.tcTestItems_.size();
+    return count;
+  }
+
+  public int getState() {
+    return this.status_;
+  }
+
+  public String getTimeStamp() {
+    String dateTime = "";
+    if (!this.providers_.isEmpty()) {
+      TCLogProviderItem item = this.providers_.get(0);
+      if (item != null) {
+        dateTime = item.getStartTime();
+      }
+    }
+    return dateTime;
+  }
+
+  int getRunTime() {
+    int dateTime = 0;
+    if (!this.providers_.isEmpty()) {
+      TCLogProviderItem item = this.providers_.get(0);
+      if (item != null) {
+        dateTime = item.getRunTime();
+      }
+    }
+    return dateTime;
+  }
+
+  public String getName() {
+    return this.name_;
+  }
+
 }

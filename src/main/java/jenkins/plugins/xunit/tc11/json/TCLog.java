@@ -190,21 +190,49 @@ public class TCLog {
     if (!this.isEmpty()) {
       for (Iterator<TCLogItem> it = this.getTCLogItems().iterator(); it.hasNext();) {
         TCLogItem item = it.next();
-        count += item.getTCLogTestItems().size();
+        count += item.getTestCount();
       }
     }
     return count;
   }
 
-  public String getFailures() {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  public int getFailures() {
+    int count = 0;
+    if (!this.isEmpty()) {
+      for (Iterator<TCLogItem> it = this.getTCLogItems().iterator(); it.hasNext();) {
+        TCLogItem item = it.next();
+        if (item.getState() == 2) {
+          count++;
+        }
+      }
+    }
+    return count;
   }
 
-  public String getSkipCount() {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  public int getSkipCount() {
+    return 0;
   }
 
-  public Object getTimestamp() {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  public String getTimestamp() {
+    String time = "";
+    if (!this.isEmpty()) {
+      TCLogItem item = this.getTCLogItem(0);
+      if (item != null) {
+        time = item.getTimeStamp();
+      }
+    }
+    return time;
   }
+
+  public int duration() {
+    int time = 0;
+    if (!this.isEmpty()) {
+      for (Iterator<TCLogItem> it = this.getTCLogItems().iterator(); it.hasNext();) {
+        TCLogItem item = it.next();
+        time += item.getRunTime();
+      }
+    }
+    return time;
+  }
+
 }

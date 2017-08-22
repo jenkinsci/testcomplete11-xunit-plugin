@@ -53,6 +53,7 @@ import javax.xml.transform.stream.StreamSource;
 import jenkins.plugins.xunit.tc11.json.JSONUtil;
 import jenkins.plugins.xunit.tc11.json.TCLog;
 import jenkins.plugins.xunit.tc11.json.TCLogItem;
+import jenkins.plugins.xunit.tc11.json.TCLogTestItem;
 
 import jenkins.plugins.xunit.tc11.mht.*;
 import org.jenkinsci.lib.dtkit.util.validator.ValidationException;
@@ -198,7 +199,7 @@ public class TestCompleteInputMetric extends InputMetric {
       Collection<File> jsFiles = FileUtils.listFiles(inputTempDir, FileFilterUtils.nameFileFilter("_root.js"), null);
       if (jsFiles.isEmpty()) {
         throw new ConversionException(
-          "Invalid TestComplete MHT file '" + inputFile.getName() + "'. No '_root.js' found.");
+            "Invalid TestComplete MHT file '" + inputFile.getName() + "'. No '_root.js' found.");
       }
 
       File rootJS = jsFiles.iterator().next();
@@ -216,7 +217,7 @@ public class TestCompleteInputMetric extends InputMetric {
            * test names.
            */
           throw new ConversionException("Invalid test filter pattern provided '" + this.testFilterPattern
-            + "'. Start (^) and end ($) line pattern symbols are not allowed.");
+              + "'. Start (^) and end ($) line pattern symbols are not allowed.");
         }
 
         infoSystemLogger("Applying test filter pattern '" + this.testFilterPattern + "' to TestComplete test: " + inputFile.getName());
@@ -268,15 +269,22 @@ public class TestCompleteInputMetric extends InputMetric {
           fw.write("<testsuites name=\"" + jsonData.getString("name") + "\">\n");
           if (!tcLog.isEmpty()) {
             for (Iterator<TCLogItem> it = tcLog.getTCLogItems().iterator(); it.hasNext();) {
+              TCLogItem item = it.next();
               fw.write("<testsuite");
-              fw.write(" name=\"" + htmlEscape(tcLog.getName()) + "\"");
-              fw.write(" tests=\"" + tcLog.testCount() + "\"");
+              fw.write(" name=\"" + htmlEscape(item.getName()) + "\"");
+              fw.write(" tests=\"" + item.getTestCount() + "\"");
               fw.write(" failures=\"" + tcLog.getFailures() + "\"");
-              fw.write(" skipped=\"" + tcLog.getSkipCount() + "\"");
-              //fw.write(" timestamp=\"" + tcLog.getTimestamp().toUTCString() + "\"");
-              //fw.write(" time=\"" + (duration / 1000) + "\"");
+              fw.write(" skipped=\"0\"");
+              fw.write(" timestamp=\"" + item.getTimeStamp() + "\"");
+              Float time = new Float(tcLog.duration() / 1000);
+              fw.write(" time=\"" + time.toString() + "\"");
               fw.write(">\n");
+              for (Iterator<TCLogTestItem> it2 = item.getTCLogTestItems().iterator(); it2.hasNext();) {
+                fw.write("<testcase");
 
+                fw.write(">\n");
+                fw.write("</testcase>\n");
+              }
               fw.write("</testsuite>\n");
             }
           }
