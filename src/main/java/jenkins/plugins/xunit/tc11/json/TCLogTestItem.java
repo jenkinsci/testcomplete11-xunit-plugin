@@ -36,6 +36,7 @@ import org.json.JSONArray;
 /**
  *
  * @author mgaertner
+ * @deprecated
  */
 public class TCLogTestItem {
 
@@ -94,7 +95,7 @@ public class TCLogTestItem {
             }
             File jsFile = jsFiles.iterator().next();
             try {
-              String fileContent = JSONUtil.readJSONFile(jsFile, "UTF-8");
+              String fileContent = MyUtils.readJSONFile(jsFile, "UTF-8");
               int start = fileContent.indexOf('(');
               int end = fileContent.length() - 1;
               fileContent = fileContent.substring(start + 1, end);

@@ -46,11 +46,13 @@ import org.json.JSONObject;
 
 import com.google.common.io.Files;
 import java.io.FileWriter;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Iterator;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 
-import jenkins.plugins.xunit.tc11.json.JSONUtil;
+import jenkins.plugins.xunit.tc11.json.MyUtils;
 import jenkins.plugins.xunit.tc11.json.TCLog;
 import jenkins.plugins.xunit.tc11.json.TCLogItem;
 
@@ -159,9 +161,9 @@ public class TestCompleteInputMetric extends InputMetric {
 
       while ((entry = mis.getNextEntry()) != null) {
         if ((CONTENT_TYPE_PLAIN.equals(entry.getContentType())
-          || CONTENT_TYPE_JAVASCRIPT.equals(entry.getContentType())
-          || CONTENT_TYPE_OCTETSTREAM.equals(entry.getContentType()))
-          && (entry.getName().startsWith("_") || entry.getName().contains("test"))) {
+            || CONTENT_TYPE_JAVASCRIPT.equals(entry.getContentType())
+            || CONTENT_TYPE_OCTETSTREAM.equals(entry.getContentType()))
+            && (entry.getName().startsWith("_") || entry.getName().contains("test"))) {
           File out = new File(tempDir, entry.getName());
           out.createNewFile();
           FileOutputStream fos = new FileOutputStream(out);
@@ -202,7 +204,7 @@ public class TestCompleteInputMetric extends InputMetric {
       Collection<File> jsFiles = FileUtils.listFiles(inputTempDir, FileFilterUtils.nameFileFilter("_root.js"), null);
       if (jsFiles.isEmpty()) {
         throw new ConversionException(
-          "Invalid TestComplete MHT file '" + inputFile.getName() + "'. No '_root.js' found.");
+            "Invalid TestComplete MHT file '" + inputFile.getName() + "'. No '_root.js' found.");
       }
 
       File rootJS = jsFiles.iterator().next();
@@ -220,7 +222,7 @@ public class TestCompleteInputMetric extends InputMetric {
            * test names.
            */
           throw new ConversionException("Invalid test filter pattern provided '" + this.testFilterPattern
-            + "'. Start (^) and end ($) line pattern symbols are not allowed.");
+              + "'. Start (^) and end ($) line pattern symbols are not allowed.");
         }
 
         infoSystemLogger("Applying test filter pattern '" + this.testFilterPattern + "' to TestComplete test: " + inputFile.getName());
@@ -247,7 +249,7 @@ public class TestCompleteInputMetric extends InputMetric {
 
     String jsonRaw = null;
     try {
-      String fileContent = JSONUtil.readJSONFile(inputFile, "UTF-8");
+      String fileContent = MyUtils.readJSONFile(inputFile, "UTF-8");
       int start = fileContent.indexOf('(');
       int end = fileContent.indexOf(')');
       fileContent = fileContent.substring(start + 1, end);
@@ -276,21 +278,28 @@ public class TestCompleteInputMetric extends InputMetric {
             fw.write(" failures=\"" + tcLog.getFailures() + "\"");
             fw.write(" skipped=\"0\"");
             fw.write(" timestamp=\"" + tcLog.getTimeStamp() + "\"");
-            Float time = new Float(tcLog.duration() / 1000);
-            fw.write(" time=\"" + time.toString() + "\"");
+            //TODO add the right time Info
+            String time = MyUtils.convertTc2DateTime(tcLog.duration() / 1000);
+            fw.write(" time=\"" + time + "\"");
             fw.write(">\n");
             for (Iterator<TCLogItem> it = tcLog.getTCLogItems().iterator(); it.hasNext();) {
               TCLogItem item = it.next();
               fw.write("<testcase");
-              fw.write(" classname=\"" + htmlEscape(item.getName()) + "\"");
+              fw.write(" classname=\"" + htmlEscape(tcLog.getName()) + "." + htmlEscape(item.getName()) + "\"");
               fw.write(" name=\"" + htmlEscape(item.getCaption()) + "\"");
-              time = new Float(item.getTestRunTime() / 1000);
-              fw.write(" time=\"" + time.toString() + "\"");
+              //TODO add the right time Info
+              time = MyUtils.convertTc2DateTime(item.getTestRunTimeInMilliSec() / 1000);
+              fw.write(" time=\"" + time + "\"");
               fw.write(">\n");
               if (item.getState() == 2 && item.getType().equals("Error")) {
-                fw.write("<failure message=\"" + htmlEscape(item.getMessage()) + "\">\n");
-                // writeString(htmlEscape(unifiedDiff(test.err)));
-                fw.write("\n</failure>\n");
+                fw.write("<failure message=\"" + htmlEscape(item.getMessage()) + "\"></failure>\n");
+                fw.write("<system-out><![CDATA[\n");
+                if (!item.getInfo().isEmpty()) {
+                  fw.write("Additional Info:\n");
+                  fw.write(htmlEscape(item.getInfo()));
+                }
+                //TODO add CallStck Info
+                fw.write("\n]]></system-out>\n");
               } else if (item.getState() < 0 || item.getState() > 2) {
                 fw.write("<skipped/>\n");
               }

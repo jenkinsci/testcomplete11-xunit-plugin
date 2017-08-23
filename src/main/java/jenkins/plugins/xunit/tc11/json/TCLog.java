@@ -44,7 +44,7 @@ public class TCLog {
   private List<TCLog> children_;
   private List<TCLog> providers_;
   private boolean empty_;
-  private List<TCLogItem> tcLogItems_ = null;
+  private List<TCLogItem> tcLogItems_;
   private final File tempDir_;
   private Map<String, List<JSONObject>> jsItems_;
 
@@ -89,16 +89,26 @@ public class TCLog {
   private void lookForJSONObjectsByName(JSONObject obj, String name) {
 
     JSONArray jsonArray = obj.getJSONArray("children");
-    for (int i = 0, size = jsonArray.length(); i < size; i++) {
-      JSONObject js;
-      js = jsonArray.optJSONObject(i);
-      if (js.has("name") && js.getString("name").contains(name)) {
+    if (jsonArray.length() > 0) {
+      for (int i = 0, size = jsonArray.length(); i < size; i++) {
+        JSONObject js;
+        js = jsonArray.optJSONObject(i);
+        if (js.has("name") && js.getString("name").contains(name)) {
+          List<JSONObject> list = new ArrayList<JSONObject>();
+          list.add(obj);
+          list.add(js);
+          this.jsItems_.put(js.getString("name"), list);
+        } else {
+          lookForJSONObjectsByName(js, name);
+        }
+      }
+    } else {
+      // persume it is a Test Log itself
+      if (obj.has("name") && obj.getString("name").contains(name)) {
         List<JSONObject> list = new ArrayList<JSONObject>();
+        list.add(null);
         list.add(obj);
-        list.add(js);
-        this.jsItems_.put(js.getString("name"), list);
-      } else {
-        lookForJSONObjectsByName(js, name);
+        this.jsItems_.put(obj.getString("name"), list);
       }
     }
   }
@@ -227,8 +237,8 @@ public class TCLog {
     return time;
   }
 
-  public int duration() {
-    int time = 0;
+  public long duration() {
+    long time = 0;
     if (!this.isEmpty()) {
       for (Iterator<TCLogItem> it = this.getTCLogItems().iterator(); it.hasNext();) {
         TCLogItem item = it.next();

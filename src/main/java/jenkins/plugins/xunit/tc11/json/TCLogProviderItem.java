@@ -22,71 +22,60 @@
  */
 package jenkins.plugins.xunit.tc11.json;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.json.JSONObject;
 
 /**
- *
- * @author mgaert
+ * @deprecated @author mgaert
  */
 public class TCLogProviderItem {
 
   private String name_;
-  private String id_;
   private String startTime_;
   private String endTime_;
-  private int runTime_;
+  private long runTime_;
   private String testItemId_;
+  private long endTimeInMilliSec_;
+  private long startTimeInMilliSec_;
 
-  /*
-      "StartTime": {
-        "msec": 1484066920290,
-        "text": "10.01.2017 16:48:40"
-      },
-      "EndTime": {
-        "msec": 1484066920381,
-        "text": "10.01.2017 16:48:40"
-      },
-      "RunTime": {
-        "msec": 91,
-        "text": "0:00:00"
-      }
+  /**
+   * @deprecated
    */
-  //"Details": "<a href=\"#\" onclick=\"return (parent.logtree_openNode || logtree_openNode)('{2170EE31-75ED-49BD-BA73-9FB10ECABFE9}')\">Details</a>",
+  TCLogProviderItem() {
+
+  }
+
+  /**
+   * @deprecated
+   */
   TCLogProviderItem(JSONObject obj) {
+    this.startTimeInMilliSec_ = 0;
+    this.endTimeInMilliSec_ = 0;
+    this.runTime_ = 0;
+    this.testItemId_ = "";
+    this.endTime_ = "";
+    this.startTime_ = "";
+    this.name_ = "";
     if (obj != null) {
       if (obj.has("Name")) {
         this.name_ = obj.getString("Name");
-      } else {
-        this.name_ = "";
       }
       if (obj.has("Details")) {
         String str = obj.getString("Details");
         this.testItemId_ = str.substring(str.indexOf("('") + 2, str.indexOf("')"));
-      } else {
-        this.testItemId_ = "";
       }
       if (obj.has("StartTime")) {
         JSONObject startTime = obj.getJSONObject("StartTime");
-        this.startTime_ = convertTc2DateTime(startTime.getString("text"), (startTime.getInt("msec") % 1000));
-      } else {
-        this.startTime_ = "";
+        this.startTime_ = MyUtils.convertTc2DateTime(startTime.getString("text"));
+        this.startTimeInMilliSec_ = startTime.getLong("msec");
       }
       if (obj.has("EndTime")) {
         JSONObject endTime = obj.getJSONObject("EndTime");
-        this.endTime_ = convertTc2DateTime(endTime.getString("text"), (endTime.getInt("msec") % 1000));
-      } else {
-        this.endTime_ = "";
+        this.endTime_ = MyUtils.convertTc2DateTime(endTime.getString("text"));
+        this.endTimeInMilliSec_ = endTime.getLong("msec");
       }
       if (obj.has("RunTime")) {
         JSONObject runTime = obj.getJSONObject("RunTime");
-        this.runTime_ = runTime.getInt("msec");
-      } else {
-        this.runTime_ = 0;
+        this.runTime_ = runTime.getLong("msec");
       }
     }
   }
@@ -99,43 +88,79 @@ public class TCLogProviderItem {
     return name_;
   }
 
-  private String convertTc2DateTime(String inputDateTime, int inputMillis) {
-    SimpleDateFormat formatter = null;
-    String dateTime = "";
-    if (inputDateTime != null && !inputDateTime.isEmpty()) {
-      if (inputDateTime.matches("[0-9]+/[0-9]+/[0-9]+ [0-9]+:[0-9]+:[0-9]+ PM|AM$")) {
-        formatter = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss aa");
-      } else if (inputDateTime.matches("[0-9]+/[0-9]+/[0-9]+ [0-9]+:[0-9]+:[0-9]+$")) {
-        formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-      } else if (inputDateTime.matches("[0-9]+\\.[0-9]+\\.[0-9]+ [0-9]+:[0-9]+:[0-9]+$")) {
-        formatter = new SimpleDateFormat("dd.MM.yyyy hh:mm:ss");
-      }
-      if (formatter != null) {
-        try {
-          SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-          Date date = formatter.parse(inputDateTime);
-          if (date != null) {
-            dateTime = df.format(date);
-            dateTime += "." + inputMillis;
-          }
-        } catch (ParseException ex) {
-          Logger.getLogger(TCLogProviderItem.class.getName()).log(Level.SEVERE, null, ex);
-        }
-      }
-    }
-    return dateTime;
-
-  }
-
+  /**
+   *
+   * @return
+   */
   public String getTestItemId() {
     return this.testItemId_;
   }
 
+  /**
+   *
+   * @return
+   */
   public String getStartTime() {
     return this.startTime_;
   }
 
-  public int getRunTime() {
+  /**
+   *
+   * @return
+   */
+  public String getEndTime() {
+    return this.endTime_;
+  }
+
+  /**
+   *
+   * @return
+   */
+  public long getStartTimeInMilliSec() {
+    return this.startTimeInMilliSec_;
+  }
+
+  /**
+   *
+   * @return
+   */
+  public long getEndTimeInMilliSec() {
+    return this.endTimeInMilliSec_;
+  }
+
+  /**
+   *
+   * @return
+   */
+  public long getRunTime() {
     return this.runTime_;
+  }
+
+  void setName(String name) {
+    this.name_ = name;
+  }
+
+  void setStartTime(String time) {
+    this.startTime_ = time;
+    this.startTimeInMilliSec_ = MyUtils.convertTcDateTime2MillSec(time);
+  }
+
+  void setEndTime(String time) {
+    this.endTime_ = time;
+    this.endTimeInMilliSec_ = MyUtils.convertTcDateTime2MillSec(time);
+  }
+
+  void setRunTime(long time) {
+    this.runTime_ = time;
+  }
+
+  void setEndTimeInMilliSec(long time) {
+    this.endTime_ = MyUtils.convertTc2DateTime(time);
+    this.endTimeInMilliSec_ = time;
+  }
+
+  void setStartTimeInMilliSec(long time) {
+    this.startTime_ = MyUtils.convertTc2DateTime(time);
+    this.startTimeInMilliSec_ = time;
   }
 }
