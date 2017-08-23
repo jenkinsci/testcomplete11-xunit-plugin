@@ -27,7 +27,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
@@ -45,41 +44,41 @@ public class TCLogItem {
   private String name_;
   private int status_;
   private String id_;
-  private List<TCLogTestItem> tcTestItems_;
-  private List<JSONObject> jsTestItems_;
-  private List<TCLogProviderItem> providers_;
+  private List<TCLogProviderItem> parent_;
+  private String message_;
+  private int runTime_;
+  private String type_;
+  private String caption_;
 
-  public TCLogItem(String id, String name, int status, JSONArray providers) {
-    this.id_ = id;
-    this.name_ = name;
-    this.status_ = status;
-
-    JSONArray jSArray = providers;
-    //this.providers_ = providers;
-    //TODO fetch content of href if not empty
-  }
-
-  public TCLogItem(JSONObject obj, File inputTempDir) {
+  public TCLogItem(JSONObject parent, JSONObject obj, File inputTempDir) {
     if (obj.has("name")) {
-      this.name_ = obj.getString("name");
+      this.name_ = parent.getString("name");
     } else {
       this.name_ = "";
     }
     if (obj.has("status")) {
-      this.status_ = obj.getInt("status");
+      this.status_ = parent.getInt("status");
     } else {
       this.status_ = 0;
+    }
+    if (obj.has("id")) {
+      this.id_ = obj.getString("id");
+    } else {
+      this.id_ = "";
     }
     /*
      * Fetch content of attached referenced document to parse out execution time of test
      */
-    if (obj.has("providers")) {
-      JSONArray jsArray = obj.getJSONArray("providers");
+    this.parent_ = new ArrayList<TCLogProviderItem>();
+    if (parent.has("providers")) {
+      JSONArray jsArray = parent.getJSONArray("providers");
       for (int i = 0; i < jsArray.length(); i++) {
         JSONObject jsObject = jsArray.optJSONObject(i);
         if (jsObject.has("href")) {
           String filename = jsObject.getString("href");
-          Collection<File> jsFiles = FileUtils.listFiles(inputTempDir, FileFilterUtils.nameFileFilter(jsObject.getString("href")), null);
+          filename = filename.substring(filename.lastIndexOf("/") + 1).toLowerCase();
+
+          Collection<File> jsFiles = FileUtils.listFiles(inputTempDir, FileFilterUtils.nameFileFilter(filename), null);
           if (jsFiles.isEmpty()) {
             String message = "Invalid TestComplete MHT file. No entry with '" + filename + "' found.";
             throw new ConversionException(message);
@@ -88,7 +87,7 @@ public class TCLogItem {
           try {
             String fileContent = JSONUtil.readJSONFile(jsFile, "UTF-8");
             int start = fileContent.indexOf('(');
-            int end = fileContent.indexOf(')');
+            int end = fileContent.length() - 1;
             fileContent = fileContent.substring(start + 1, end);
 
             String jsonRaw = fileContent.substring(fileContent.indexOf(',') + 1);
@@ -97,7 +96,8 @@ public class TCLogItem {
               JSONArray items = tmpObject.getJSONArray("items");
               for (int j = 0; j < items.length(); j++) {
                 JSONObject js = items.optJSONObject(j);
-                this.providers_.add(new TCLogProviderItem(js));
+                TCLogProviderItem item = new TCLogProviderItem(js);
+                this.parent_.add(item);
               }
             }
 
@@ -109,68 +109,86 @@ public class TCLogItem {
         }
       }
     }
-    this.jsTestItems_ = new ArrayList<JSONObject>();
-    this.tcTestItems_ = new ArrayList<TCLogTestItem>();
-    lookForJSONObjectsByName(obj, "Test Log");
-    for (Iterator<JSONObject> it = this.jsTestItems_.iterator(); it.hasNext();) {
-      JSONObject js = it.next();
-      if (js.has("name")) {
-        TCLogProviderItem providerItem = this.getProviderItemByName(js.getString("id"));
-        this.addTCLogTestItem(new TCLogTestItem(it.next(), providerItem));
+    if (obj.has("providers")) {
+      JSONArray jsArray = obj.getJSONArray("providers");
+      for (int i = 0; i < jsArray.length(); i++) {
+        JSONObject jsObject = jsArray.optJSONObject(i);
+        if (jsObject.has("href")) {
+          String filename = jsObject.getString("href");
+          filename = filename.substring(filename.lastIndexOf("/") + 1).toLowerCase();
+
+          Collection<File> jsFiles = FileUtils.listFiles(inputTempDir, FileFilterUtils.nameFileFilter(filename), null);
+          if (jsFiles.isEmpty()) {
+            String message = "Invalid TestComplete MHT file. No entry with '" + filename + "' found.";
+            throw new ConversionException(message);
+          }
+          File jsFile = jsFiles.iterator().next();
+          try {
+            String fileContent = JSONUtil.readJSONFile(jsFile, "UTF-8");
+            int start = fileContent.indexOf('(');
+            int end = fileContent.length() - 1;
+            fileContent = fileContent.substring(start + 1, end);
+
+            String jsonRaw = fileContent.substring(fileContent.indexOf(',') + 1);
+            JSONObject tmpObject = new JSONObject(jsonRaw);
+            if (tmpObject.has("caption")) {
+              this.caption_ = tmpObject.getString("caption");
+            } else {
+              this.caption_ = "";
+            }
+            if (tmpObject.has("items")) {
+              JSONArray items = tmpObject.getJSONArray("items");
+
+              JSONObject obj2 = items.optJSONObject(0);
+              if (obj2 != null) {
+                if (obj2.has("Message")) {
+                  String str = obj2.getString("Message");
+                  this.message_ = str;
+                } else {
+                  this.message_ = "";
+                }
+                if (obj2.has("Time")) {
+                  JSONObject time = obj2.getJSONObject("Time");
+                  this.runTime_ = time.getInt("msec");
+                } else {
+                  this.runTime_ = 0;
+                }
+                if (obj2.has("TypeDescription")) {
+                  String str = obj2.getString("TypeDescription");
+                  this.type_ = str;
+                } else {
+                  this.type_ = "";
+                }
+              }
+            }
+          } catch (FileNotFoundException e) {
+            throw new ConversionException("File '" + jsFile.getName() + "' not found.");
+          } catch (IOException e) {
+            throw new ConversionException("File '" + jsFile.getName() + "' can not be read.");
+          }
+        }
       }
     }
-    if (obj.has("id")) {
-      this.id_ = obj.getString("id");
-    } else {
-      this.id_ = "";
-    }
   }
 
-  private void lookForJSONObjectsByName(JSONObject obj, String name) {
-
-    JSONArray jsonArray = obj.getJSONArray("children");
-    for (int i = 0, size = jsonArray.length(); i < size; i++) {
-      JSONObject js;
-      js = jsonArray.optJSONObject(i);
-      if (js.has("name") && js.getString("name").contains(name)) {
-        this.jsTestItems_.add(js);
-      } else {
-        lookForJSONObjectsByName(js, name);
-      }
-    }
+  public String getName() {
+    return this.name_;
   }
 
-  public TCLogTestItem getTCLogTestItem(int index) {
-    TCLogTestItem tcLogTestItem = null;
-    if (!this.tcTestItems_.isEmpty() && index >= 0 && index < this.tcTestItems_.size()) {
-      tcLogTestItem = this.tcTestItems_.get(index);
-    }
-    return tcLogTestItem;
+  public String getCaption() {
+    return this.caption_;
   }
 
-  public List<TCLogTestItem> getTCLogTestItems() {
-    return this.tcTestItems_;
+  public int getTestRunTime() {
+    return this.runTime_;
   }
 
-  private void addTCLogTestItem(TCLogTestItem tcLogItem) {
-    if (this.tcTestItems_ != null) {
-      this.tcTestItems_.add(tcLogItem);
-    }
+  public String getType() {
+    return this.type_;
   }
 
-  private TCLogProviderItem getProviderItemByName(String id) {
-    for (Iterator<TCLogProviderItem> it = this.providers_.iterator(); it.hasNext();) {
-      TCLogProviderItem item = it.next();
-      if (item.getTestItemId().equals(id)) {
-        return item;
-      }
-    }
-    return null;
-  }
-
-  public int getTestCount() {
-    int count = this.tcTestItems_.size();
-    return count;
+  public String getMessage() {
+    return this.message_;
   }
 
   public int getState() {
@@ -179,8 +197,8 @@ public class TCLogItem {
 
   public String getTimeStamp() {
     String dateTime = "";
-    if (!this.providers_.isEmpty()) {
-      TCLogProviderItem item = this.providers_.get(0);
+    if (!this.parent_.isEmpty()) {
+      TCLogProviderItem item = this.parent_.get(0);
       if (item != null) {
         dateTime = item.getStartTime();
       }
@@ -190,17 +208,12 @@ public class TCLogItem {
 
   int getRunTime() {
     int dateTime = 0;
-    if (!this.providers_.isEmpty()) {
-      TCLogProviderItem item = this.providers_.get(0);
+    if (!this.parent_.isEmpty()) {
+      TCLogProviderItem item = this.parent_.get(0);
       if (item != null) {
         dateTime = item.getRunTime();
       }
     }
     return dateTime;
   }
-
-  public String getName() {
-    return this.name_;
-  }
-
 }

@@ -66,7 +66,7 @@ public class TCLogProviderItem {
       }
       if (obj.has("Details")) {
         String str = obj.getString("Details");
-        this.testItemId_ = str.substring(str.indexOf("'{") + 1, str.indexOf("}'"));
+        this.testItemId_ = str.substring(str.indexOf("('") + 2, str.indexOf("')"));
       } else {
         this.testItemId_ = "";
       }

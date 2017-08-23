@@ -53,7 +53,6 @@ import javax.xml.transform.stream.StreamSource;
 import jenkins.plugins.xunit.tc11.json.JSONUtil;
 import jenkins.plugins.xunit.tc11.json.TCLog;
 import jenkins.plugins.xunit.tc11.json.TCLogItem;
-import jenkins.plugins.xunit.tc11.json.TCLogTestItem;
 
 import jenkins.plugins.xunit.tc11.mht.*;
 import org.jenkinsci.lib.dtkit.util.validator.ValidationException;
@@ -73,7 +72,8 @@ public class TestCompleteInputMetric extends InputMetric {
   private static final long serialVersionUID = 1260330207046310240L;
 
   private static final Logger LOGGER = Logger.getLogger("XUnitService");
-
+  private final static String CONTENT_TYPE_OCTETSTREAM = "application/octet-stream";
+  private final static String CONTENT_TYPE_PLAIN = "text/plain";
   private final static String CONTENT_TYPE_JAVASCRIPT = "application/javascript";
   /**
    * Base URL links inside MHT and XML files refer to
@@ -158,7 +158,10 @@ public class TestCompleteInputMetric extends InputMetric {
       int readBytes;
 
       while ((entry = mis.getNextEntry()) != null) {
-        if (CONTENT_TYPE_JAVASCRIPT.equals(entry.getContentType()) && entry.getName().startsWith("_")) {
+        if ((CONTENT_TYPE_PLAIN.equals(entry.getContentType())
+          || CONTENT_TYPE_JAVASCRIPT.equals(entry.getContentType())
+          || CONTENT_TYPE_OCTETSTREAM.equals(entry.getContentType()))
+          && (entry.getName().startsWith("_") || entry.getName().contains("test"))) {
           File out = new File(tempDir, entry.getName());
           out.createNewFile();
           FileOutputStream fos = new FileOutputStream(out);
@@ -199,7 +202,7 @@ public class TestCompleteInputMetric extends InputMetric {
       Collection<File> jsFiles = FileUtils.listFiles(inputTempDir, FileFilterUtils.nameFileFilter("_root.js"), null);
       if (jsFiles.isEmpty()) {
         throw new ConversionException(
-            "Invalid TestComplete MHT file '" + inputFile.getName() + "'. No '_root.js' found.");
+          "Invalid TestComplete MHT file '" + inputFile.getName() + "'. No '_root.js' found.");
       }
 
       File rootJS = jsFiles.iterator().next();
@@ -217,7 +220,7 @@ public class TestCompleteInputMetric extends InputMetric {
            * test names.
            */
           throw new ConversionException("Invalid test filter pattern provided '" + this.testFilterPattern
-              + "'. Start (^) and end ($) line pattern symbols are not allowed.");
+            + "'. Start (^) and end ($) line pattern symbols are not allowed.");
         }
 
         infoSystemLogger("Applying test filter pattern '" + this.testFilterPattern + "' to TestComplete test: " + inputFile.getName());
@@ -230,13 +233,13 @@ public class TestCompleteInputMetric extends InputMetric {
       throw new ConversionException("Errors parsing input MHT file '" + inputFile.getName() + "'", e);
     } finally {
 
-//      if (inputTempDir != null) {
-//        try {
-//          FileUtils.deleteDirectory(inputTempDir);
-//        } catch (IOException e) {
-//
-//        }
-//      }
+      if (inputTempDir != null) {
+        try {
+          FileUtils.deleteDirectory(inputTempDir);
+        } catch (IOException e) {
+
+        }
+      }
     }
   }
 
@@ -259,7 +262,6 @@ public class TestCompleteInputMetric extends InputMetric {
 
     if ((jsonRaw != null) && (!jsonRaw.trim().isEmpty())) {
       JSONObject jsonData = new JSONObject(jsonRaw);
-      infoSystemLogger(jsonData.get("name").toString());
       TCLog tcLog;
       tcLog = new TCLog(jsonData, inputTempDir);
       FileWriter fw;
@@ -268,25 +270,34 @@ public class TestCompleteInputMetric extends InputMetric {
         try {
           fw.write("<testsuites name=\"" + jsonData.getString("name") + "\">\n");
           if (!tcLog.isEmpty()) {
+            fw.write("<testsuite");
+            fw.write(" name=\"" + htmlEscape(tcLog.getName()) + "\"");
+            fw.write(" tests=\"" + tcLog.getTestCount() + "\"");
+            fw.write(" failures=\"" + tcLog.getFailures() + "\"");
+            fw.write(" skipped=\"0\"");
+            fw.write(" timestamp=\"" + tcLog.getTimeStamp() + "\"");
+            Float time = new Float(tcLog.duration() / 1000);
+            fw.write(" time=\"" + time.toString() + "\"");
+            fw.write(">\n");
             for (Iterator<TCLogItem> it = tcLog.getTCLogItems().iterator(); it.hasNext();) {
               TCLogItem item = it.next();
-              fw.write("<testsuite");
-              fw.write(" name=\"" + htmlEscape(item.getName()) + "\"");
-              fw.write(" tests=\"" + item.getTestCount() + "\"");
-              fw.write(" failures=\"" + tcLog.getFailures() + "\"");
-              fw.write(" skipped=\"0\"");
-              fw.write(" timestamp=\"" + item.getTimeStamp() + "\"");
-              Float time = new Float(tcLog.duration() / 1000);
+              fw.write("<testcase");
+              fw.write(" classname=\"" + htmlEscape(item.getName()) + "\"");
+              fw.write(" name=\"" + htmlEscape(item.getCaption()) + "\"");
+              time = new Float(item.getTestRunTime() / 1000);
               fw.write(" time=\"" + time.toString() + "\"");
               fw.write(">\n");
-              for (Iterator<TCLogTestItem> it2 = item.getTCLogTestItems().iterator(); it2.hasNext();) {
-                fw.write("<testcase");
-
-                fw.write(">\n");
-                fw.write("</testcase>\n");
+              if (item.getState() == 2 && item.getType().equals("Error")) {
+                fw.write("<failure message=\"" + htmlEscape(item.getMessage()) + "\">\n");
+                // writeString(htmlEscape(unifiedDiff(test.err)));
+                fw.write("\n</failure>\n");
+              } else if (item.getState() < 0 || item.getState() > 2) {
+                fw.write("<skipped/>\n");
               }
-              fw.write("</testsuite>\n");
+
+              fw.write("</testcase>\n");
             }
+            fw.write("</testsuite>\n");
           }
           fw.write("</testsuites>\n");
         } finally {
@@ -299,134 +310,18 @@ public class TestCompleteInputMetric extends InputMetric {
       }
 
     }
-
-    // Formatting start time to javascript date then extracting milliseconds
-    // for later timestamp incrementation
-    // String dateFormatted = new Date(jsonData.stats.start);
-    // dateMilliseconds = dateFormatted.getTime();
-    // suites = jsonData.suites.suites;
-    //
-    // writeString('<testsuites name="' + jsonData.reportTitle + '">\n');
-    //
-    // suites.forEach(function (suite) {
-    //
-    // var testCount = 0,
-    // failures = 0,
-    // skips = 0,
-    // duration = 0;
-    //
-    // var tests = suite.tests;
-    //
-    // tests.forEach(function (test) {
-    // testCount++;
-    // duration = duration + test.duration;
-    // if (test.fail == true) failures++;
-    // if (test.skipped == true) skips++;
-    // });
-    //
-    // //incrementing millisecond timestamp by adding duration of all tests in order
-    // //to correctly input testsuite 'timestamp' value
-    // dateMilliseconds = dateMilliseconds + duration;
-    //
-    // var dateTimestamp = new Date(dateMilliseconds);
-    //
-    // writeString('<testsuite');
-    // writeString(' name="' + htmlEscape(suite.title) + '"');
-    // writeString(' tests="' + testCount + '"');
-    // writeString(' failures="' + failures + '"');
-    // writeString(' skipped="' + skips + '"');
-    // writeString(' timestamp="' + dateTimestamp.toUTCString() + '"');
-    // writeString(' time="' + (duration / 1000) + '"');
-    // writeString('>\n');
-    //
-    // tests.forEach(function (test) {
-    // writeString('<testcase');
-    // writeString(' classname="' + htmlEscape(suite.title) + '"');
-    // writeString(' name="' + htmlEscape(test.title) + '"');
-    // writeString(' time="' + (test.duration / 1000) + '">\n');
-    // if (test.state == "failed") {
-    // writeString('<failure message="');
-    // if (test.err.message) writeString(htmlEscape(test.err.message));
-    // writeString('">\n');
-    // writeString(htmlEscape(unifiedDiff(test.err)));
-    // writeString('\n</failure>\n');
-    //
-    // } else if (test.state === undefined) {
-    // writeString('<skipped/>\n');
-    // }
-    //
-    // //TODO : extract console output to leverage this logic
-    // //if (test.logEntries && test.logEntries.length) {
-    // // writeString('<system-out><![CDATA[');
-    // // test.logEntries.forEach(function (entry) {
-    // // var outstr = util.format.apply(util, entry) + '\n';
-    // // outstr = removeInvalidXmlChars(outstr);
-    // // // We need to escape CDATA ending tags inside CDATA
-    // // outstr = outstr.replace(/]]>/g, ']]]]><![CDATA[>')
-    // // writeString(outstr);
-    // // });
-    // // writeString(']]></system-out>\n');
-    // //}
-    //
-    // writeString('</testcase>\n');
-    // });
-    //
-    // writeString('</testsuite>\n');
-    // });
-    //
-    // writeString('</testsuites>\n');
-    // if (junitXml) fs.closeSync(junitXml);
-    // }
-    //
-    // } else {
-    // console.log("Unable to parse json file.");
-    // }
   }
 
-  /*
-    private void writeString(String str) {
-      if (junitXml) {
-         var buf = new Buffer(str);
-         fs.writeSync(junitXml, buf, 0, buf.length, null);
-      }
-    }
+  /**
+   * makes String HTML conform
+   *
+   * @param str
+   * @return
    */
   private String htmlEscape(String str) {
     return str.replaceAll("&", "&amp;").replaceAll("\"", "&quot;").replaceAll("'", "&#39;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
   }
 
-  /* function escapeInvisibles(line) { return line.replace(/\t/g, '<tab>')
-   * .replace(/\r/g, '<CR>') .replace(/\n/g, '<LF>\n'); }
-   *
-   * function cleanUp(line) { if (line.match(/\@\@/)) return null; if
-   * (line.match(/\\ No newline/)) return null; return escapeInvisibles(line); }
-   *
-   * function notBlank(line) { return line != null; }
-   *
-   * private String unifiedDiff(Object err) {
-   *
-   *
-   * actual = err.actual; expected = err.expected;
-   *
-   * lines = null; String msg = "";
-   *
-   * if (err.actual && err.expected) { // make sure actual and expected are
-   * strings if (!(typeof actual === 'string' || actual instanceof String)) {
-   * actual = JSON.stringify(err.actual); }
-   *
-   * if (!(typeof expected === 'string' || expected instanceof String)) { expected
-   * = JSON.stringify(err.actual); }
-   *
-   * msg = diff.createPatch('string', actual, expected); lines =
-   * msg.split('\n').splice(4); msg +=
-   * lines.map(cleanUp).filter(notBlank).join('\n'); }
-   *
-   * //TODO: Leverage if needed //if (options.junit_report_stack && err.stack) {
-   * // if (msg) msg += '\n'; // lines = err.stack.split('\n').slice(1); // msg +=
-   * lines.map(cleanUp).filter(notBlank).join('\n'); //}
-   *
-   * return msg; }
-   */
   @Override
   public boolean validateInputFile(File inputXMLFile) throws ValidationException {
     return getInputValidationErrors().isEmpty();

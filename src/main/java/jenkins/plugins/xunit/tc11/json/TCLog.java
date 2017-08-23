@@ -24,8 +24,10 @@ package jenkins.plugins.xunit.tc11.json;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -43,9 +45,8 @@ public class TCLog {
   private List<TCLog> providers_;
   private boolean empty_;
   private List<TCLogItem> tcLogItems_ = null;
-  private List<JSONObject> jsLogItems_ = null;
-  private TCLog tcLogRoot_ = null;
   private final File tempDir_;
+  private Map<String, List<JSONObject>> jsItems_;
 
   public TCLog(JSONObject obj, File inputTempDir) {
     this.tempDir_ = inputTempDir;
@@ -73,12 +74,14 @@ public class TCLog {
     } else {
       this.id_ = "";
     }
-
-    this.jsLogItems_ = new ArrayList<JSONObject>();
+    this.jsItems_ = new HashMap<String, List<JSONObject>>();
     this.tcLogItems_ = new ArrayList<TCLogItem>();
-    lookForJSONObjectsByName(obj, "TestItem");
-    for (Iterator<JSONObject> it = this.jsLogItems_.iterator(); it.hasNext();) {
-      this.addTCLogItem(new TCLogItem(it.next(), this.tempDir_));
+    lookForJSONObjectsByName(obj, "Test Log");
+    for (String key : this.jsItems_.keySet()) {
+      JSONObject owner = this.jsItems_.get(key).get(0);
+      JSONObject child = this.jsItems_.get(key).get(1);
+
+      this.addTCLogItem(new TCLogItem(owner, child, this.tempDir_));
     }
     this.empty_ = this.tcLogItems_.isEmpty();
   }
@@ -90,7 +93,10 @@ public class TCLog {
       JSONObject js;
       js = jsonArray.optJSONObject(i);
       if (js.has("name") && js.getString("name").contains(name)) {
-        this.jsLogItems_.add(js);
+        List<JSONObject> list = new ArrayList<JSONObject>();
+        list.add(obj);
+        list.add(js);
+        this.jsItems_.put(js.getString("name"), list);
       } else {
         lookForJSONObjectsByName(js, name);
       }
@@ -185,13 +191,10 @@ public class TCLog {
     return empty_;
   }
 
-  public int testCount() {
+  public int getTestCount() {
     int count = 0;
     if (!this.isEmpty()) {
-      for (Iterator<TCLogItem> it = this.getTCLogItems().iterator(); it.hasNext();) {
-        TCLogItem item = it.next();
-        count += item.getTestCount();
-      }
+      count = this.getTCLogItems().size();
     }
     return count;
   }
@@ -213,7 +216,7 @@ public class TCLog {
     return 0;
   }
 
-  public String getTimestamp() {
+  public String getTimeStamp() {
     String time = "";
     if (!this.isEmpty()) {
       TCLogItem item = this.getTCLogItem(0);
