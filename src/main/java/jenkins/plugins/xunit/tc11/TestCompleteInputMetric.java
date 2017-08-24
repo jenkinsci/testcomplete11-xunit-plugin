@@ -161,9 +161,9 @@ public class TestCompleteInputMetric extends InputMetric {
 
       while ((entry = mis.getNextEntry()) != null) {
         if ((CONTENT_TYPE_PLAIN.equals(entry.getContentType())
-            || CONTENT_TYPE_JAVASCRIPT.equals(entry.getContentType())
-            || CONTENT_TYPE_OCTETSTREAM.equals(entry.getContentType()))
-            && (entry.getName().startsWith("_") || entry.getName().contains("test"))) {
+          || CONTENT_TYPE_JAVASCRIPT.equals(entry.getContentType())
+          || CONTENT_TYPE_OCTETSTREAM.equals(entry.getContentType()))
+          && (entry.getName().startsWith("_") || entry.getName().contains("test"))) {
           File out = new File(tempDir, entry.getName());
           out.createNewFile();
           FileOutputStream fos = new FileOutputStream(out);
@@ -204,7 +204,7 @@ public class TestCompleteInputMetric extends InputMetric {
       Collection<File> jsFiles = FileUtils.listFiles(inputTempDir, FileFilterUtils.nameFileFilter("_root.js"), null);
       if (jsFiles.isEmpty()) {
         throw new ConversionException(
-            "Invalid TestComplete MHT file '" + inputFile.getName() + "'. No '_root.js' found.");
+          "Invalid TestComplete MHT file '" + inputFile.getName() + "'. No '_root.js' found.");
       }
 
       File rootJS = jsFiles.iterator().next();
@@ -222,7 +222,7 @@ public class TestCompleteInputMetric extends InputMetric {
            * test names.
            */
           throw new ConversionException("Invalid test filter pattern provided '" + this.testFilterPattern
-              + "'. Start (^) and end ($) line pattern symbols are not allowed.");
+            + "'. Start (^) and end ($) line pattern symbols are not allowed.");
         }
 
         infoSystemLogger("Applying test filter pattern '" + this.testFilterPattern + "' to TestComplete test: " + inputFile.getName());
@@ -270,15 +270,15 @@ public class TestCompleteInputMetric extends InputMetric {
       try {
         fw = new FileWriter(outFile);
         try {
-          fw.write("<testsuites name=\"" + jsonData.getString("name") + "\">\n");
+          //fw.write("<testsuites name=\"" + jsonData.getString("name") + "\">\n");
           if (!tcLog.isEmpty()) {
             fw.write("<testsuite");
             fw.write(" name=\"" + htmlEscape(tcLog.getName()) + "\"");
             fw.write(" tests=\"" + tcLog.getTestCount() + "\"");
             fw.write(" failures=\"" + tcLog.getFailures() + "\"");
             fw.write(" skipped=\"0\"");
-            fw.write(" timestamp=\"" + tcLog.getTimeStamp() + "\"");
-            //TODO add the right time Info
+            fw.write(" timestamp=\"" + MyUtils.convertTc2DateTime(tcLog.getTimeStamp()) + "\"");
+
             String time = MyUtils.convertTc2DateTime(tcLog.duration() / 1000);
             fw.write(" time=\"" + time + "\"");
             fw.write(">\n");
@@ -287,8 +287,8 @@ public class TestCompleteInputMetric extends InputMetric {
               fw.write("<testcase");
               fw.write(" classname=\"" + htmlEscape(tcLog.getName()) + "." + htmlEscape(item.getName()) + "\"");
               fw.write(" name=\"" + htmlEscape(item.getCaption()) + "\"");
-              //TODO add the right time Info
-              time = MyUtils.convertTc2DateTime(item.getTestRunTimeInMilliSec() / 1000);
+
+              time = String.format("%d", (item.getRunTime() / 1000));
               fw.write(" time=\"" + time + "\"");
               fw.write(">\n");
               if (item.getState() == 2 && item.getType().equals("Error")) {
@@ -300,6 +300,7 @@ public class TestCompleteInputMetric extends InputMetric {
                 }
                 //TODO add CallStck Info
                 fw.write("\n]]></system-out>\n");
+                fw.write("<system-err/>\n");
               } else if (item.getState() < 0 || item.getState() > 2) {
                 fw.write("<skipped/>\n");
               }
@@ -308,7 +309,7 @@ public class TestCompleteInputMetric extends InputMetric {
             }
             fw.write("</testsuite>\n");
           }
-          fw.write("</testsuites>\n");
+          //fw.write("</testsuites>\n");
         } finally {
           fw.close();
         }

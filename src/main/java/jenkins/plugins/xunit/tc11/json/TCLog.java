@@ -226,12 +226,12 @@ public class TCLog {
     return 0;
   }
 
-  public String getTimeStamp() {
-    String time = "";
+  public long getTimeStamp() {
+    long time = 0;
     if (!this.isEmpty()) {
       TCLogItem item = this.getTCLogItem(0);
       if (item != null) {
-        time = item.getTimeStamp();
+        time = item.getStartTimeInMilliSec();
       }
     }
     return time;

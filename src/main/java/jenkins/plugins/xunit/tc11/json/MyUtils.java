@@ -13,6 +13,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import jenkins.plugins.xunit.tc11.TestCompleteInputMetric;
 
 public class MyUtils {
 
@@ -62,13 +63,13 @@ public class MyUtils {
       }
       if (formatter != null) {
         try {
-          SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+          SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS");
           Date date = formatter.parse(inputDateTime);
           if (date != null) {
             dateTime = df.format(date);
           }
         } catch (ParseException ex) {
-          Logger.getLogger(TCLogProviderItem.class.getName()).log(Level.SEVERE, "[TC11 - xUnit] - {0}", ex);
+          Logger.getLogger(TestCompleteInputMetric.class.getName()).log(Level.SEVERE, "[TC11 - xUnit] - {0}", ex);
         }
       }
     }
@@ -94,13 +95,12 @@ public class MyUtils {
       }
       if (formatter != null) {
         try {
-          SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
           Date date = formatter.parse(inputDateTime);
           if (date != null) {
             dateTime = date.getTime();
           }
         } catch (ParseException ex) {
-          Logger.getLogger(TCLogProviderItem.class.getName()).log(Level.SEVERE, "[TC11 - xUnit] - {0}", ex);
+          Logger.getLogger(TestCompleteInputMetric.class.getName()).log(Level.SEVERE, "[TC11 - xUnit] - {0}", ex);
         }
       }
     }

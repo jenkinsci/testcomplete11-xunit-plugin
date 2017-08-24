@@ -45,8 +45,8 @@ public class TCLogItem {
   private int status_;
   private String id_;
   private String message_;
-  private long testRunTimeInMilliSec_;
-  private String testRunTime_;
+  private long testTimeInMilliSec_;
+  private String testTime_;
   private String type_;
   private String caption_;
   private String info_;
@@ -60,8 +60,8 @@ public class TCLogItem {
     this.info_ = "";
     this.caption_ = "";
     this.type_ = "";
-    this.testRunTime_ = "";
-    this.testRunTimeInMilliSec_ = 0;
+    this.testTime_ = "";
+    this.testTimeInMilliSec_ = 0;
     this.message_ = "";
     this.status_ = 0;
     this.name_ = "";
@@ -118,11 +118,11 @@ public class TCLogItem {
                 }
                 if (obj2.has("Time")) {
                   JSONObject time = obj2.getJSONObject("Time");
-                  this.testRunTimeInMilliSec_ = time.getLong("msec");
-                  this.testRunTime_ = time.getString("text");
+                  this.testTimeInMilliSec_ = time.getLong("msec");
+                  this.testTime_ = time.getString("text");
                 } else {
-                  this.testRunTimeInMilliSec_ = 0;
-                  this.testRunTime_ = "";
+                  this.testTimeInMilliSec_ = 0;
+                  this.testTime_ = "";
                 }
                 if (obj2.has("TypeDescription")) {
                   String str = obj2.getString("TypeDescription");
@@ -195,9 +195,9 @@ public class TCLogItem {
         }
       }
     } else {
-      this.startTime_ = this.testRunTime_;
-      this.startTimeInMilliSec_ = MyUtils.convertTcDateTime2MillSec(this.testRunTime_);
-      this.runTime_ = this.testRunTimeInMilliSec_;
+      this.startTime_ = this.testTime_;
+      this.startTimeInMilliSec_ = MyUtils.convertTcDateTime2MillSec(this.testTime_);
+      this.runTime_ = 0;
 
     }
 
@@ -224,7 +224,7 @@ public class TCLogItem {
    * @return
    */
   public long getTestRunTimeInMilliSec() {
-    return this.testRunTimeInMilliSec_;
+    return this.testTimeInMilliSec_;
   }
 
   /**
@@ -248,7 +248,7 @@ public class TCLogItem {
    * @return
    */
   public String getTestRunTime() {
-    return this.testRunTime_;
+    return this.testTime_;
   }
 
   /**
@@ -288,7 +288,7 @@ public class TCLogItem {
    *
    * @return
    */
-  long getRunTime() {
+  public long getRunTime() {
     return this.runTime_;
   }
 
