@@ -27,7 +27,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.jenkinsci.lib.dtkit.util.converter.ConversionException;
@@ -55,6 +57,7 @@ public class TCLogItem {
   private String endTime_;
   private long startTimeInMilliSec_;
   private String startTime_;
+  private List<Map<String, String>> callStack_;
 
   public TCLogItem(JSONObject parent, JSONObject obj, File inputTempDir) {
     this.info_ = "";
@@ -66,6 +69,7 @@ public class TCLogItem {
     this.status_ = 0;
     this.name_ = "";
     this.id_ = "";
+    this.callStack_ = new ArrayList<Map<String, String>>();
 
     if (obj.has("name")) {
       this.name_ = obj.getString("name");
@@ -114,6 +118,22 @@ public class TCLogItem {
                   JSONObject info = obj2.getJSONObject("AdditionalInfo");
                   if (!info.getBoolean("isfilename")) {
                     this.info_ = info.getString("text");
+                  }
+                }
+                if (obj2.has("CallStack")) {
+                  JSONObject callStack = obj2.getJSONObject("CallStack");
+                  JSONArray callStackItems = callStack.optJSONArray("items");
+                  for (int j = 0; j < callStackItems.length(); j++) {
+                    JSONObject js = callStackItems.optJSONObject(j);
+                    Map<String, String> cs = new HashMap<String, String>();
+                    if (js.has("UnitName")) {
+                      cs.put("Unit", js.getString("UnitName"));
+                    } else {
+                      cs.put("Unit", "");
+                    }
+                    cs.put("Line", Integer.toString(js.getInt("LineNo")));
+                    cs.put("Test", js.getString("Test"));
+                    this.callStack_.add(cs);
                   }
                 }
                 if (obj2.has("Time")) {
@@ -298,5 +318,9 @@ public class TCLogItem {
    */
   public String getInfo() {
     return info_;
+  }
+
+  public List<Map<String, String>> getCallStack() {
+    return this.callStack_;
   }
 }

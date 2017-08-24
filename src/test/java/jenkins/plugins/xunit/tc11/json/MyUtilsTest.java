@@ -31,6 +31,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.Ignore;
 
 /**
  *
@@ -60,6 +61,7 @@ public class MyUtilsTest {
   /**
    * Test of parseJSONFile method, of class MyUtils.
    */
+  @Ignore
   @Test
   public void testParseJSONFile() throws Exception {
     File jsonFile = null;
@@ -74,6 +76,7 @@ public class MyUtilsTest {
   /**
    * Test of readJSONFile method, of class MyUtils.
    */
+  @Ignore
   @Test
   public void testReadJSONFile() throws Exception {
     File jsonFile = null;
@@ -88,6 +91,7 @@ public class MyUtilsTest {
   /**
    * Test of convertTc2DateTime method, of class MyUtils.
    */
+  @Ignore
   @Test
   public void testConvertTc2DateTime_String() {
     String inputDateTime = "";
@@ -101,6 +105,7 @@ public class MyUtilsTest {
   /**
    * Test of convertTc2DateTime method, of class MyUtils.
    */
+  @Ignore
   @Test
   public void testConvertTc2DateTime_long() {
     long msec = 0L;

@@ -29,52 +29,58 @@ import org.junit.Test;
 import org.junit.Ignore;
 
 public class TestCompleteXSLTest extends AbstractXUnitXSLTest {
-        @Ignore
-	@Test
-	public void testKeywordTestProject() throws Exception {
-		convertAndValidate(TestCompleteInputMetric.class,
-				"TC-testKeywordTestProject.mht",
-				"JUnit-testKeywordTestProject.xml");
-	}
-        @Ignore
-	@Test
-	public void testScriptTestProject() throws Exception {
-		convertAndValidate(TestCompleteInputMetric.class,
-				"TC-testScriptTestProject.mht",
-				"JUnit-testScriptTestProject.xml");
-	}
-        @Ignore
-	@Test
-	public void testProjectSuite() throws Exception {
-		convertAndValidate(TestCompleteInputMetric.class,
-				"TC-testProjectSuite.mht", "JUnit-testProjectSuite.xml");
-	}
-        @Ignore
-	@Test
-	public void testSingleKeywordTest() throws Exception {
-		convertAndValidate(TestCompleteInputMetric.class,
-				"TC-testSingleKeywordTest.mht",
-				"JUnit-testSingleKeywordTest.xml");
-	}
-@Ignore
-	@Test
-	public void testSingleScriptTest() throws Exception {
-		convertAndValidate(TestCompleteInputMetric.class,
-				"TC-testSingleScriptTest.mht", "JUnit-testSingleScriptTest.xml");
-	}
-@Ignore
-	@Test
-	public void testParameters() throws Exception {
 
-		Map<String, Object> params = new HashMap<String, Object>();
-		// Filter out KT3 and ST3 tests from result using external parameter
-		// "testPattern"
-		params.put(TestCompleteInputMetric.PARAM_TEST_PATTERN, ".*T[12]");
+  @Ignore
+  @Test
+  public void testKeywordTestProject() throws Exception {
+    convertAndValidate(TestCompleteInputMetric.class,
+        "TC-testKeywordTestProject.mht",
+        "JUnit-testKeywordTestProject.xml");
+  }
 
-		// Internal parameter "baseUrl" for this tests is "http://mySite/"
-		// instead of
-		// default "http://localhost/"
-		convertAndValidate(TestCompleteInputMetric.class,
-				"TC-testParameters.mht", "JUnit-testParameters.xml", params);
-	}
+  @Ignore
+  @Test
+  public void testScriptTestProject() throws Exception {
+    convertAndValidate(TestCompleteInputMetric.class,
+        "TC-testScriptTestProject.mht",
+        "JUnit-testScriptTestProject.xml");
+  }
+
+  @Ignore
+  @Test
+  public void testProjectSuite() throws Exception {
+    convertAndValidate(TestCompleteInputMetric.class,
+        "TC-testProjectSuite.mht", "JUnit-testProjectSuite.xml");
+  }
+
+  @Ignore
+  @Test
+  public void testSingleKeywordTest() throws Exception {
+    convertAndValidate(TestCompleteInputMetric.class,
+        "TC-testSingleKeywordTest.mht",
+        "JUnit-testSingleKeywordTest.xml");
+  }
+
+  @Ignore
+  @Test
+  public void testSingleScriptTest() throws Exception {
+    convertAndValidate(TestCompleteInputMetric.class,
+        "TC-testSingleScriptTest.mht", "JUnit-testSingleScriptTest.xml");
+  }
+
+  @Ignore
+  @Test
+  public void testParameters() throws Exception {
+
+    Map<String, Object> params = new HashMap<String, Object>();
+    // Filter out KT3 and ST3 tests from result using external parameter
+    // "testPattern"
+    params.put(TestCompleteInputMetric.PARAM_TEST_PATTERN, ".*T[12]");
+
+    // Internal parameter "baseUrl" for this tests is "http://mySite/"
+    // instead of
+    // default "http://localhost/"
+    convertAndValidate(TestCompleteInputMetric.class,
+        "TC-testParameters.mht", "JUnit-testParameters.xml", params);
+  }
 }
