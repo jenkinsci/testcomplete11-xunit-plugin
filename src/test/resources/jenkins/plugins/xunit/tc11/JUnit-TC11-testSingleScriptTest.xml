@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:fo="http://www.w3.org/1999/XSL/Format"
+           xmlns:fn="http://www.w3.org/2005/xpath-functions"
+           xmlns:xdt="http://www.w3.org/2005/xpath-datatypes" name="TC11-testSingleScriptTest" tests="8" failures="2" skipped="0" timestamp="2017-01-10T17:48:40.708" time="0">
+<testcase classname="TC11-testSingleScriptTest.JenkinsTC11.Script Test Log [Unit1\ST1]" name="Test Log" time="0">
+<system-out><![CDATA[
+[2017-01-10T17:48:40.743] ** Message ** Informative message
+]]></system-out>
+<system-err/>
+</testcase>
+<testcase classname="TC11-testSingleScriptTest.JenkinsTC11.Script Test Log [Unit1\ST3]" name="Test Log" time="0">
+<failure message="Error message"></failure>
+<system-out><![CDATA[
+[2017-01-10T17:48:40.757] ** Error ** Error message
+
+Call Stack:
+    14: Unit1.ST3
+
+]]></system-out>
+<system-err/>
+</testcase>
+<testcase classname="TC11-testSingleScriptTest.JenkinsTC11.Script Test Log [Unit1\ST2]" name="Test Log" time="0">
+<system-out><![CDATA[
+[2017-01-10T17:48:40.750] ** Warning ** Warning message
+]]></system-out>
+<system-err/>
+</testcase>
+<testcase classname="TC11-testSingleScriptTest.JenkinsTC11.Script Test Log [Unit1\ST4]" name="Test Log" time="0">
+<system-out><![CDATA[
+[2017-01-10T17:48:40.764] ** Event ** Event Message
+]]></system-out>
+<system-err/>
+</testcase>
+<testcase classname="TC11-testSingleScriptTest.JenkinsTC11.Keyword Test Log [KT4]" name="Test Log" time="0">
+<system-out><![CDATA[
+[2017-01-10T17:48:40.421] ** Event ** Event Message
+]]></system-out>
+<system-err/>
+</testcase>
+<testcase classname="TC11-testSingleScriptTest.JenkinsTC11.Keyword Test Log [KT3]" name="Test Log" time="0">
+<failure message="Error message"></failure>
+<system-out><![CDATA[
+[2017-01-10T17:48:40.393] ** Error ** Error message
+
+Call Stack:
+    1: KT3()
+
+]]></system-out>
+<system-err/>
+</testcase>
+<testcase classname="TC11-testSingleScriptTest.JenkinsTC11.Keyword Test Log [KT2]" name="Test Log" time="0">
+<system-out><![CDATA[
+[2017-01-10T17:48:40.386] ** Warning ** Warning message
+
+]]></system-out>
+<system-err/>
+</testcase>
+<testcase classname="TC11-testSingleScriptTest.JenkinsTC11.Keyword Test Log [KT1]" name="Test Log" time="0">
+<system-out><![CDATA[
+[2017-01-10T17:48:40.310] ** Message ** Informative message
+
+]]></system-out>
+<system-err/>
+</testcase>
+</testsuite>

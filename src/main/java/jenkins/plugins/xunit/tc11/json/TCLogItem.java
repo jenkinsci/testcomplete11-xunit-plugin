@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
@@ -69,7 +70,7 @@ public class TCLogItem {
     this.status_ = 0;
     this.name_ = "";
     this.id_ = "";
-    this.callStack_ = new ArrayList<Map<String, String>>();
+    this.callStack_ = new ArrayList<>();
 
     if (obj.has("name")) {
       this.name_ = obj.getString("name");
@@ -86,7 +87,7 @@ public class TCLogItem {
         JSONObject jsObject = jsArray.optJSONObject(i);
         if (jsObject.has("href")) {
           String filename = jsObject.getString("href");
-          filename = filename.substring(filename.lastIndexOf("/") + 1).toLowerCase();
+          filename = filename.substring(filename.lastIndexOf("/") + 1).toLowerCase(Locale.ENGLISH);
 
           Collection<File> jsFiles = FileUtils.listFiles(inputTempDir, FileFilterUtils.nameFileFilter(filename), null);
           if (jsFiles.isEmpty()) {
@@ -125,15 +126,17 @@ public class TCLogItem {
                   JSONArray callStackItems = callStack.optJSONArray("items");
                   for (int j = 0; j < callStackItems.length(); j++) {
                     JSONObject js = callStackItems.optJSONObject(j);
-                    Map<String, String> cs = new HashMap<String, String>();
-                    if (js.has("UnitName")) {
-                      cs.put("Unit", js.getString("UnitName"));
-                    } else {
-                      cs.put("Unit", "");
+                    if (js != null) {
+                      Map<String, String> cs = new HashMap<>();
+                      if (js.has("UnitName")) {
+                        cs.put("Unit", js.getString("UnitName"));
+                      } else {
+                        cs.put("Unit", "");
+                      }
+                      cs.put("Line", Integer.toString(js.getInt("LineNo")));
+                      cs.put("Test", js.getString("Test"));
+                      this.callStack_.add(cs);
                     }
-                    cs.put("Line", Integer.toString(js.getInt("LineNo")));
-                    cs.put("Test", js.getString("Test"));
-                    this.callStack_.add(cs);
                   }
                 }
                 if (obj2.has("Time")) {
@@ -169,7 +172,7 @@ public class TCLogItem {
         JSONObject jsObject = jsArray.optJSONObject(i);
         if (jsObject.has("href")) {
           String filename = jsObject.getString("href");
-          filename = filename.substring(filename.lastIndexOf("/") + 1).toLowerCase();
+          filename = filename.substring(filename.lastIndexOf("/") + 1).toLowerCase(Locale.ENGLISH);
 
           Collection<File> jsFiles = FileUtils.listFiles(inputTempDir, FileFilterUtils.nameFileFilter(filename), null);
           if (jsFiles.isEmpty()) {
@@ -224,64 +227,67 @@ public class TCLogItem {
   }
 
   /**
-   *
-   * @return
+   * @return The name of the test log item
    */
   public String getName() {
     return this.name_;
   }
 
   /**
+   * @return The id of the test log item
+   */
+  public String getId() {
+    return this.id_;
+  }
+
+  /**
    *
-   * @return
+   * @return The test cae name of the test log item
    */
   public String getCaption() {
     return this.caption_;
   }
 
   /**
+   * The test run time of the test case
    *
-   * @return
+   * @return Time in milli seconds
    */
   public long getTestRunTimeInMilliSec() {
     return this.testTimeInMilliSec_;
   }
 
   /**
+   * The start time of the test suit
    *
-   * @return
+   * @return Time in milli seconds
    */
   public long getStartTimeInMilliSec() {
     return this.startTimeInMilliSec_;
   }
 
   /**
+   * The end time of the test suit
    *
-   * @return
+   * @return Time in milli seconds
    */
   public long getEndTimeInMilliSec() {
     return this.endTimeInMilliSec_;
   }
 
   /**
+   * The type of the test case message. It is one of 'Error', 'Warning' or 'Info'
    *
-   * @return
-   */
-  public String getTestRunTime() {
-    return this.testTime_;
-  }
-
-  /**
-   *
-   * @return
+   * @return The Type of the test case message
    */
   public String getType() {
     return this.type_;
   }
 
   /**
+   * The message of the test case. If the type is one of 'Error', 'Warning' or 'Info'.
    *
-   * @return
+   * @return The test case message
    */
   public String getMessage() {
     return this.message_;
@@ -289,24 +295,47 @@ public class TCLogItem {
 
   /**
    *
-   * @return
+   * @return The State of the test case 2: Error, 1: Warning and 0:Info
    */
-  public int getState() {
+  public int getStatus() {
     return this.status_;
   }
 
   /**
    *
-   * @return
+   * @return The date and time in msec of the test item
+   */
+  public long getTestTimeInMilliSec() {
+    return testTimeInMilliSec_;
+  }
+
+  /**
+   *
+   * @return The date and time of the test item
+   */
+  public String getTestTime() {
+    return testTime_;
+  }
+
+  /**
+   *
+   * @return The starting time of the test suit
    */
   public String getTimeStamp() {
     return this.startTime_;
   }
 
   /**
-   * The run time in msec
    *
-   * @return
+   * @return The ending time of the test suit
+   */
+  public String getEndTime() {
+    return this.endTime_;
+  }
+
+  /**
+   *
+   * @return The run time in msec
    */
   public long getRunTime() {
     return this.runTime_;
@@ -314,12 +343,16 @@ public class TCLogItem {
 
   /**
    *
-   * @return
+   * @return Additional info from the testcase in case of state error or an empty string
    */
   public String getInfo() {
     return info_;
   }
 
+  /**
+   *
+   * @return CallStack from the testcase in case of the state error or an empty string
+   */
   public List<Map<String, String>> getCallStack() {
     return this.callStack_;
   }

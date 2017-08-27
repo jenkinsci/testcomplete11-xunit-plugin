@@ -22,122 +22,120 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>org.jenkins-ci.plugins</groupId>
-		<artifactId>plugin</artifactId>
-		<version>1.605</version>
-	</parent>
-	<artifactId>testcomplete11-xunit</artifactId>
-	<packaging>hpi</packaging>
-	<version>1.0-SNAPSHOT</version>
-	<!-- get every artifact through repo.jenkins-ci.org, which proxies all the 
-		artifacts that we need -->
-	<name>Jenkins TestComplete 11 xUnit Plugin</name>
-	<description>Jenkins plugins that transforms TestComplete 11 MHT reports into xUnit format</description>
-	<url>http://wiki.jenkins-ci.org/display/JENKINS/TestComplete+xUnit+Plugin</url>
-	<licenses>
-		<license>
-			<name>MIT license</name>
-			<comments>All source code is under the MIT license.</comments>
-		</license>
-	</licenses>
-	<developers>
-		<developer>
-			<id>mgaert</id>
-			<name>Michael Gärtner</name>
-			<timezone>+1</timezone>
-			<roles>
-				<role>Project creator</role>
-				<role>Project developer</role>
-				<role>Project owner</role>
-			</roles>
-		</developer>
-	</developers>
-	<!-- Initial dev location -->
-	<scm>
-		<connection>scm:git:git://github.com/mgaert/testcomplete11-xunit-plugin.git</connection>
-		<developerConnection>scm:git:git@github.com:mgaert/testcomplete11-xunit-plugin.git</developerConnection>
-		<tag>HEAD</tag>
-	</scm>
-	<!-- Final location -->
-	<!-- 
-	<scm>
-		<connection>scm:git:git://github.com/jenkinsci/testcomplete-xunit-plugin.git</connection>
-		<developerConnection>scm:git:git@github.com:jenkinsci/testcomplete-xunit-plugin.git</developerConnection>
-		<tag>HEAD</tag>
-	</scm>
-	 -->
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.source>1.6</maven.compiler.source>
-		<maven.compiler.target>1.6</maven.compiler.target>
-		<xunit.plugin.version>1.90</xunit.plugin.version>
-		<json.plugin.version>20170516</json.plugin.version>
-		<junit.version>4.8.2</junit.version>
-		<xmlunit.version>1.3</xmlunit.version>
-		<saxon.version>9.1.0.8</saxon.version>
-		<mockito.version>1.8.5</mockito.version>
-	</properties>
-	<dependencies>
-		<dependency>
-			<groupId>org.jenkins-ci.plugins</groupId>
-			<artifactId>xunit</artifactId>
-			<version>${xunit.plugin.version}</version>
-		</dependency>
-                <dependency>
-			<groupId>org.json</groupId>
-			<artifactId>json</artifactId>
-			<version>${json.plugin.version}</version>
-		</dependency>
-                <dependency>
-			<groupId>net.sourceforge.saxon</groupId>
-			<artifactId>saxon</artifactId>
-			<version>${saxon.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>net.sourceforge.saxon</groupId>
-			<artifactId>saxon</artifactId>
-			<version>${saxon.version}</version>
-			<classifier>s9api</classifier>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>net.sourceforge.saxon</groupId>
-			<artifactId>saxon</artifactId>
-			<version>${saxon.version}</version>
-			<classifier>dom</classifier>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>${junit.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>xmlunit</groupId>
-			<artifactId>xmlunit</artifactId>
-			<version>${xmlunit.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-all</artifactId>
-			<version>${mockito.version}</version>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
-	<build>
-		<plugins>
-			<plugin>
-          <groupId>org.jenkins-ci.tools</groupId>
-          <artifactId>maven-hpi-plugin</artifactId>
-          </plugin>
-		</plugins>
-	</build>
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.jenkins-ci.plugins</groupId>
+    <artifactId>plugin</artifactId>
+    <version>2.11</version>
+  </parent>
+  <artifactId>testcomplete11-xunit</artifactId>
+  <packaging>hpi</packaging>
+  <version>1.0-SNAPSHOT</version>
+  <!-- get every artifact through repo.jenkins-ci.org, which proxies all the
+  artifacts that we need -->
+  <name>TestComplete 11 xUnit Plugin</name>
+  <description>Jenkins plugin that transforms TestComplete 11 and 12 MHT reports into xUnit format</description>
+  <url>http://wiki.jenkins-ci.org/display/JENKINS/TestComplete+xUnit+Plugin</url>
+  <licenses>
+    <license>
+      <name>MIT license</name>
+      <comments>All source code is under the MIT license.</comments>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <id>mgaert</id>
+      <name>Michael Gärtner</name>
+      <timezone>+1</timezone>
+      <roles>
+        <role>Project creator</role>
+        <role>Project developer</role>
+        <role>Project owner</role>
+      </roles>
+    </developer>
+  </developers>
+  <!-- Initial dev location -->
+  <scm>
+    <connection>scm:git:git://github.com/mgaert/testcomplete11-xunit-plugin.git</connection>
+    <developerConnection>scm:git:git@github.com:mgaert/testcomplete11-xunit-plugin.git</developerConnection>
+    <tag>HEAD</tag>
+  </scm>
+  <!-- Final location -->
+  <!--
+ <scm>
+   <connection>scm:git:git://github.com/jenkinsci/testcomplete-xunit-plugin.git</connection>
+   <developerConnection>scm:git:git@github.com:jenkinsci/testcomplete-xunit-plugin.git</developerConnection>
+   <tag>HEAD</tag>
+ </scm>
+  -->
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.source>1.6</maven.compiler.source>
+    <maven.compiler.target>1.6</maven.compiler.target>
+    <xunit.plugin.version>1.90</xunit.plugin.version>
+    <json.plugin.version>20170516</json.plugin.version>
+    <xmlunit.version>1.3</xmlunit.version>
+    <saxon.version>9.1.0.8</saxon.version>
+    <mockito.version>1.8.5</mockito.version>
+  </properties>
+  <dependencies>
+    <dependency>
+      <groupId>org.jenkins-ci.plugins</groupId>
+      <artifactId>xunit</artifactId>
+      <version>${xunit.plugin.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.json</groupId>
+      <artifactId>json</artifactId>
+      <version>${json.plugin.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>net.sourceforge.saxon</groupId>
+      <artifactId>saxon</artifactId>
+      <version>${saxon.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>net.sourceforge.saxon</groupId>
+      <artifactId>saxon</artifactId>
+      <version>${saxon.version}</version>
+      <classifier>s9api</classifier>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>net.sourceforge.saxon</groupId>
+      <artifactId>saxon</artifactId>
+      <version>${saxon.version}</version>
+      <classifier>dom</classifier>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>xmlunit</groupId>
+      <artifactId>xmlunit</artifactId>
+      <version>${xmlunit.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
+      <version>${mockito.version}</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.jenkins-ci.tools</groupId>
+        <artifactId>maven-hpi-plugin</artifactId>
+      </plugin>
+    </plugins>
+  </build>
   <repositories>
     <repository>
       <id>repo.jenkins-ci.org</id>

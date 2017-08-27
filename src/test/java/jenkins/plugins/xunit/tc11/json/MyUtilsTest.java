@@ -64,9 +64,10 @@ public class MyUtilsTest {
   @Ignore
   @Test
   public void testParseJSONFile() throws Exception {
-    File jsonFile = null;
-    String encoding = "";
-    JSONObject expResult = null;
+    File jsonFile = new File(this.getClass().getResource("testJSON.json")
+        .toURI());
+    String encoding = "UTF-8";
+    JSONObject expResult = new JSONObject();
     JSONObject result = MyUtils.parseJSONFile(jsonFile, encoding);
     assertEquals(expResult, result);
     // TODO review the generated test code and remove the default call to fail.

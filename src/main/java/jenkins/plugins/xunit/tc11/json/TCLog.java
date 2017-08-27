@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -74,14 +75,18 @@ public class TCLog {
     } else {
       this.id_ = "";
     }
-    this.jsItems_ = new HashMap<String, List<JSONObject>>();
-    this.tcLogItems_ = new ArrayList<TCLogItem>();
+    this.jsItems_ = new HashMap<>();
+    this.tcLogItems_ = new ArrayList<>();
     lookForJSONObjectsByName(obj, "Test Log");
-    for (String key : this.jsItems_.keySet()) {
-      JSONObject owner = this.jsItems_.get(key).get(0);
-      JSONObject child = this.jsItems_.get(key).get(1);
+    final Set<Map.Entry<String, List<JSONObject>>> entries = this.jsItems_.entrySet();
+    for (Map.Entry<String, List<JSONObject>> entry : entries) {
+      List<JSONObject> list = entry.getValue();
+      if (list != null) {
+        JSONObject owner = list.get(0);
+        JSONObject child = list.get(1);
 
-      this.addTCLogItem(new TCLogItem(owner, child, this.tempDir_));
+        this.addTCLogItem(new TCLogItem(owner, child, this.tempDir_));
+      }
     }
     this.empty_ = this.tcLogItems_.isEmpty();
   }
@@ -214,7 +219,7 @@ public class TCLog {
     if (!this.isEmpty()) {
       for (Iterator<TCLogItem> it = this.getTCLogItems().iterator(); it.hasNext();) {
         TCLogItem item = it.next();
-        if (item.getState() == 2) {
+        if (item.getStatus() == 2) {
           count++;
         }
       }

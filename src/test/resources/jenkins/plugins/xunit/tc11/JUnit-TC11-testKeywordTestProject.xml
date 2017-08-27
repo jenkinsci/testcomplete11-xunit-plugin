@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:fo="http://www.w3.org/1999/XSL/Format"
+           xmlns:fn="http://www.w3.org/2005/xpath-functions"
+           xmlns:xdt="http://www.w3.org/2005/xpath-datatypes"
+  name="TC11-testKeywordTestProject" tests="4" failures="1" skipped="0" timestamp="2017-01-10T17:50:52.522" time="0">
+<testcase classname="TC11-testKeywordTestProject.TestKeywordProject.Keyword Test Log [KT4]" name="Test Log" time="0">
+<system-out><![CDATA[
+[2017-01-10T17:50:52.567] ** Event ** Event Message
+]]></system-out>
+<system-err/>
+</testcase>
+<testcase classname="TC11-testKeywordTestProject.TestKeywordProject.Keyword Test Log [KT3]" name="Test Log" time="0">
+<failure message="Error message"></failure>
+<system-out><![CDATA[
+[2017-01-10T17:50:52.516] ** Error ** Error message
+
+Call Stack:
+    1: KT3()
+
+]]></system-out>
+<system-err/>
+</testcase>
+<testcase classname="TC11-testKeywordTestProject.TestKeywordProject.Keyword Test Log [KT2]" name="Test Log" time="0">
+<system-out><![CDATA[
+[2017-01-10T17:50:52.439] ** Warning ** Warning message
+
+]]></system-out>
+<system-err/>
+</testcase>
+<testcase classname="TC11-testKeywordTestProject.TestKeywordProject.Keyword Test Log [KT1]" name="Test Log" time="0">
+<system-out><![CDATA[
+[2017-01-10T17:50:52.354] ** Message ** Informative message
+
+]]></system-out>
+<system-err/>
+</testcase>
+</testsuite>

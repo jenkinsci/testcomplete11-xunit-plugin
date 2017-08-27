@@ -26,45 +26,40 @@ import java.io.IOException;
 
 /**
  * Signals that a MHT exception of some sort has occurred.
- * 
+ *
  * @author Michael Gärtner
  *
  */
 public class MHTException extends IOException {
 
-	/**
-	 * Serial version of this exception
-	 */
-	private static final long serialVersionUID = 6097799246130577951L;
+  /**
+   * Serial version of this exception
+   */
+  private static final long serialVersionUID = 6097799246130577951L;
 
-	/**
-	 * Constructs a {@link MHTException} with <code>null</code> as its error
-	 * detail message.
-	 */
-	public MHTException() {
-		super();
-	}
+  /**
+   * Constructs a {@link MHTException} with <code>null</code> as its error detail message.
+   */
+  public MHTException() {
+    super();
+  }
 
-	/**
-	 * Constructs a {@link MHTException} with the specified detail message.
-	 * 
-	 * @param the
-	 *            detail message.
-	 */
-	public MHTException(String s) {
-		super(s);
-	}
+  /**
+   * Constructs a {@link MHTException} with the specified detail message.
+   *
+   * @param s the detail message.
+   */
+  public MHTException(String s) {
+    super(s);
+  }
 
-	/**
-	 * Constructs a {@link MHTException} with the specified detail message and
-	 * the given cause.
-	 * 
-	 * @param s
-	 *            the detail message.
-	 * @param t
-	 *            the cause.
-	 */
-	public MHTException(String s, Throwable t) {
-		super(s, t);
-	}
+  /**
+   * Constructs a {@link MHTException} with the specified detail message and the given cause.
+   *
+   * @param s the detail message.
+   * @param t the cause.
+   */
+  public MHTException(String s, Throwable t) {
+    super(s, t);
+  }
 }

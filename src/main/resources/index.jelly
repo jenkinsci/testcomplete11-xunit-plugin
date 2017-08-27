@@ -1,3 +1,6 @@
-<div>
-  This plugin is a <a href="https://wiki.jenkins-ci.org/display/JENKINS/xUnit+Plugin">xUnit Plugin</a> extension that allows transforming <a href="http://en.wikipedia.org/wiki/TestComplete">TestComplete</a> MHT test reports into xUnit format so they can be integrated with Jenkins' JUnit features.
-</div>  
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <st:documentation>
+    This plugin is a <a href="https://wiki.jenkins-ci.org/display/JENKINS/xUnit+Plugin">xUnit Plugin</a> extension that allows transforming <a href="http://en.wikipedia.org/wiki/TestComplete">TestComplete</a> MHT test reports into xUnit format so they can be integrated with Jenkins' JUnit features.
+  </st:documentation>
+</j:jelly>

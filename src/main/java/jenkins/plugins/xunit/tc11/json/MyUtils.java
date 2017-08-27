@@ -18,12 +18,16 @@ import jenkins.plugins.xunit.tc11.TestCompleteInputMetric;
 public class MyUtils {
 
   /**
+   * Opens the given JSON file and returns the content as {@link org.json.JSONObject}
+   * <br>
+   * If the named file does not exist, is a directory rather than a regular file, or for some other reason cannot be opened for reading then a
+   * <code>FileNotFoundException</code> is thrown.
    *
-   * @param jsonFile
-   * @param encoding
-   * @return
-   * @throws FileNotFoundException
-   * @throws IOException
+   * @param jsonFile JSON File
+   * @param encoding The name of a supported {@link java.nio.charset.Charset charset}
+   * @return The file Content as {@link org.json.JSONObject}
+   * @throws FileNotFoundException if the file does not exist, is a directory rather than a regular file, or for some other reason cannot be opened for reading.
+   * @throws IOException if an I/O error occurs
    */
   public static JSONObject parseJSONFile(File jsonFile, String encoding) throws FileNotFoundException, IOException {
     InputStreamReader fi = new InputStreamReader(new FileInputStream(jsonFile), encoding);
@@ -32,12 +36,16 @@ public class MyUtils {
   }
 
   /**
+   * Opens the given JSON file and returns the content as string
+   * <br>
+   * If the named file does not exist, is a directory rather than a regular file, or for some other reason cannot be opened for reading then a
+   * <code>FileNotFoundException</code> is thrown.
    *
-   * @param jsonFile
-   * @param encoding
-   * @return
-   * @throws FileNotFoundException
-   * @throws IOException
+   * @param jsonFile JSON File
+   * @param encoding The name of a supported {@link java.nio.charset.Charset charset}
+   * @return The file content as string
+   * @throws FileNotFoundException if the file does not exist, is a directory rather than a regular file, or for some other reason cannot be opened for reading.
+   * @throws IOException if an I/O error occurs
    */
   public static String readJSONFile(File jsonFile, String encoding) throws FileNotFoundException, IOException {
     InputStreamReader fi = new InputStreamReader(new FileInputStream(jsonFile), encoding);
@@ -46,9 +54,11 @@ public class MyUtils {
   }
 
   /**
+   * Converts the given date time string from the format 'MM/dd/yyyy hh:mm:ss aa', 'dd/MM/yyyy HH:mm:ss' or 'dd.MM.yyyy hh:mm:ss' to the format 'yyyy-MM-dd
+   * hh:mm:ss.SSS'
    *
-   * @param inputDateTime
-   * @return
+   * @param inputDateTime Time in the format 'MM/dd/yyyy hh:mm:ss aa', 'dd/MM/yyyy HH:mm:ss' or 'dd.MM.yyyy HH:mm:ss'
+   * @return Date time string formated as 'yyyy-MM-dd hh:mm:ss.SSS'
    */
   public static String convertTc2DateTime(String inputDateTime) {
     SimpleDateFormat formatter = null;
@@ -59,11 +69,11 @@ public class MyUtils {
       } else if (inputDateTime.matches("[0-9]+/[0-9]+/[0-9]+ [0-9]+:[0-9]+:[0-9]+$")) {
         formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
       } else if (inputDateTime.matches("[0-9]+\\.[0-9]+\\.[0-9]+ [0-9]+:[0-9]+:[0-9]+$")) {
-        formatter = new SimpleDateFormat("dd.MM.yyyy hh:mm:ss");
+        formatter = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
       }
       if (formatter != null) {
         try {
-          SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS");
+          SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
           Date date = formatter.parse(inputDateTime);
           if (date != null) {
             dateTime = df.format(date);
@@ -78,9 +88,10 @@ public class MyUtils {
   }
 
   /**
+   * Converts the given date time String from the format 'MM/dd/yyyy hh:mm:ss aa', 'dd/MM/yyyy HH:mm:ss' or 'dd.MM.yyyy HH:mm:ss' to a time in milli seconds
    *
-   * @param inputDateTime
-   * @return
+   * @param inputDateTime Time in the format 'MM/dd/yyyy hh:mm:ss aa', 'dd/MM/yyyy HH:mm:ss' or 'dd.MM.yyyy HH:mm:ss'
+   * @return Time in milli seconds
    */
   public static long convertTcDateTime2MillSec(String inputDateTime) {
     SimpleDateFormat formatter = null;
@@ -91,7 +102,7 @@ public class MyUtils {
       } else if (inputDateTime.matches("[0-9]+/[0-9]+/[0-9]+ [0-9]+:[0-9]+:[0-9]+$")) {
         formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
       } else if (inputDateTime.matches("[0-9]+\\.[0-9]+\\.[0-9]+ [0-9]+:[0-9]+:[0-9]+$")) {
-        formatter = new SimpleDateFormat("dd.MM.yyyy hh:mm:ss");
+        formatter = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
       }
       if (formatter != null) {
         try {
@@ -109,12 +120,13 @@ public class MyUtils {
   }
 
   /**
+   * Converts time given in milliseconds to a Date string formated as 'yyyy-MM-dd hh:mm:ss.SSS'
    *
-   * @param msec
-   * @return
+   * @param msec Time in milli seconds
+   * @return Date string formated as 'yyyy-MM-dd hh:mm:ss.SSS'
    */
   public static String convertTc2DateTime(long msec) {
-    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS");
+    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
     Date date = new Date(msec);
     return df.format(date);
   }

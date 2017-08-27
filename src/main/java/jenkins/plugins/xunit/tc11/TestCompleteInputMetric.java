@@ -46,10 +46,13 @@ import org.json.JSONObject;
 
 import com.google.common.io.Files;
 import java.io.FileWriter;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import javax.annotation.RegEx;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 
@@ -58,6 +61,7 @@ import jenkins.plugins.xunit.tc11.json.TCLog;
 import jenkins.plugins.xunit.tc11.json.TCLogItem;
 
 import jenkins.plugins.xunit.tc11.mht.*;
+import org.apache.commons.io.FileExistsException;
 import org.jenkinsci.lib.dtkit.util.validator.ValidationException;
 import org.jenkinsci.lib.dtkit.util.validator.ValidationService;
 
@@ -111,7 +115,7 @@ public class TestCompleteInputMetric extends InputMetric {
 
   @Override
   public String getToolVersion() {
-    return "11.x";
+    return "12.x";
   }
 
   protected void setTestFilterPattern(String testFilterPattern) {
@@ -142,12 +146,9 @@ public class TestCompleteInputMetric extends InputMetric {
    * @throws MHTException if and MHT error occurs
    * @throws IOException if an I/O error ocurrs
    */
-  private File extractFilesFromMHTFile(File inputFile, Map<String, Object> params) throws IOException {
+  private File extractFilesFromMHTFile(File inputFile, Map<String, Object> params) throws IOException, SecurityException {
     File tempDir = Files.createTempDir();
-    MHTInputStream mis = null;
-
-    try {
-      mis = new MHTInputStream(new FileInputStream(inputFile));
+    try (MHTInputStream mis = new MHTInputStream(new FileInputStream(inputFile))) {
 
       if (params != null) {
         params.put(INTERNAL_PARAM_BASE_URL, mis.getBaseUrl());
@@ -167,35 +168,34 @@ public class TestCompleteInputMetric extends InputMetric {
             || CONTENT_TYPE_OCTETSTREAM.equals(entry.getContentType()))
             && (entry.getName().startsWith("_") || entry.getName().contains("test"))) {
           File out = new File(tempDir, entry.getName());
-          out.createNewFile();
-          FileOutputStream fos = new FileOutputStream(out);
-          try {
-            while ((readBytes = mis.read(buffer)) > 0) {
-              fos.write(buffer, 0, readBytes);
+          boolean createNewFile = out.createNewFile();
+          if (createNewFile) {
+            try (FileOutputStream fos = new FileOutputStream(out)) {
+              while ((readBytes = mis.read(buffer)) > 0) {
+                fos.write(buffer, 0, readBytes);
+              }
             }
-          } finally {
-            fos.close();
+          } else {
+            FileUtils.deleteDirectory(tempDir);
+            mis.close();
+            throw new FileExistsException("File " + entry.getName() + " already exists.");
           }
         }
       }
 
       return tempDir;
 
-    } catch (IOException e) {
+    } catch (IOException | SecurityException e) {
       // Cleanup temporary directory here upon failure
       FileUtils.deleteDirectory(tempDir);
       throw e;
-    } finally {
-      if (mis != null) {
-        mis.close();
-      }
     }
   }
 
   @Override
   public void convert(File inputFile, File outFile, Map<String, Object> params) throws ConversionException {
     File inputTempDir = null;
-    Map<String, Object> conversionParams = new HashMap<String, Object>();
+    Map<String, Object> conversionParams = new HashMap<>();
     if (params != null) {
       conversionParams.putAll(params);
     }
@@ -207,7 +207,7 @@ public class TestCompleteInputMetric extends InputMetric {
       Collection<File> jsFiles = FileUtils.listFiles(inputTempDir, FileFilterUtils.nameFileFilter("_root.js"), null);
       if (jsFiles.isEmpty()) {
         throw new ConversionException(
-            "Invalid TestComplete MHT file '" + inputFile.getName() + "'. No '_root.js' found.");
+            "Invalid TestComplete 11 or 12 MHT file '" + inputFile.getName() + "'. No '_root.js' found.");
       }
 
       File rootJS = jsFiles.iterator().next();
@@ -233,9 +233,12 @@ public class TestCompleteInputMetric extends InputMetric {
         conversionParams.put(PARAM_TEST_PATTERN, this.testFilterPattern);
       }
 
-      this.convertJson(inputTempDir, rootJS, outFile);
+      this.convertJson(inputTempDir, rootJS, outFile, conversionParams);
+
     } catch (IOException e) {
       throw new ConversionException("Errors parsing input MHT file '" + inputFile.getName() + "'", e);
+    } catch (SecurityException e) {
+      throw new ConversionException("Error writing temp files.", e);
     } finally {
 
       if (inputTempDir != null) {
@@ -248,7 +251,14 @@ public class TestCompleteInputMetric extends InputMetric {
     }
   }
 
-  private void convertJson(File inputTempDir, File inputFile, File outFile) {
+  /**
+   * Parses the given JavaScript file for JSON parts and generates a JUnit xml file
+   *
+   * @param inputTempDir Tempory directory used for temp files. will be deleted at the end.
+   * @param inputFile JavaScript file containing JSON inforamtion
+   * @param outFile JUnit xml file
+   */
+  private void convertJson(File inputTempDir, File inputFile, File outFile, Map<String, Object> conversionParams) {
 
     String jsonRaw = null;
     try {
@@ -269,62 +279,52 @@ public class TestCompleteInputMetric extends InputMetric {
       JSONObject jsonData = new JSONObject(jsonRaw);
       TCLog tcLog;
       tcLog = new TCLog(jsonData, inputTempDir);
-      FileWriter fw;
+      OutputStreamWriter fw;
       try {
-        fw = new FileWriter(outFile);
+        fw = new OutputStreamWriter(new FileOutputStream(outFile), StandardCharsets.UTF_8);
         try {
           if (!tcLog.isEmpty()) {
-            fw.write("<testsuite");
+            fw.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+            fw.write("<testsuite xmlns:xs=\"http://www.w3.org/2001/XMLSchema\""
+                + " xmlns:fo=\"http://www.w3.org/1999/XSL/Format\""
+                + " xmlns:fn=\"http://www.w3.org/2005/xpath-functions\""
+                + " xmlns:xdt=\"http://www.w3.org/2005/xpath-datatypes\"");
             fw.write(" name=\"" + htmlEscape(this.fileName_) + "\"");
             fw.write(" tests=\"" + tcLog.getTestCount() + "\"");
             fw.write(" failures=\"" + tcLog.getFailures() + "\"");
             fw.write(" skipped=\"0\"");
             fw.write(" timestamp=\"" + MyUtils.convertTc2DateTime(tcLog.getTimeStamp()) + "\"");
-
-            String time = MyUtils.convertTc2DateTime(tcLog.duration() / 1000);
+            String time = String.format("%d", tcLog.duration() / 1000);
             fw.write(" time=\"" + time + "\"");
             fw.write(">\n");
             for (Iterator<TCLogItem> it = tcLog.getTCLogItems().iterator(); it.hasNext();) {
               TCLogItem item = it.next();
+              //TODO Add exclusion Pattern
+//              String testLogNamePattern = "[^ ]+ Test Log \\[[^\\\\]]+ \\]";
+//              if (item.getName().matches(testLogNamePattern)) {
+//
+//              }
+//
               fw.write("<testcase");
               fw.write(" classname=\"" + htmlEscape(this.fileName_) + "." + htmlEscape(tcLog.getName()) + "." + htmlEscape(item.getName()) + "\"");
               fw.write(" name=\"" + htmlEscape(item.getCaption()) + "\"");
-
               time = String.format("%d", (item.getRunTime() / 1000));
               fw.write(" time=\"" + time + "\"");
               fw.write(">\n");
-              if (item.getState() == 2 && item.getType().equals("Error")) {
+              if (item.getStatus() == 2 && item.getType().equals("Error")) {
                 fw.write("<failure message=\"" + htmlEscape(item.getMessage()) + "\"></failure>\n");
-                fw.write("<system-out><![CDATA[\n");
-                if (!item.getCallStack().isEmpty()) {
-                  fw.write("Call Stack:\n");
-                  List list = item.getCallStack();
-                  for (int i = 0; i < list.size(); i++) {
-                    HashMap<String, String> m = (HashMap<String, String>) list.get(i);
-                    fw.write(m.get("Line") + ":");
-                    if (!m.get("Unit").isEmpty()) {
-                      fw.write(m.get("Unit") + ".");
-                    }
-                    fw.write(m.get("Test"));
-                    fw.write("\n");
-                  }
-                  fw.write("\n");
-                }
-                if (!item.getInfo().isEmpty()) {
-                  fw.write("Additional Info:\n");
-                  fw.write(htmlEscape(item.getInfo()));
-                  fw.write("\n");
-                }
-                fw.write("]]></system-out>\n");
+                writeSystemOut(fw, item);
                 fw.write("<system-err/>\n");
-              } else if (item.getState() < 0 || item.getState() > 2) {
-                fw.write("<skipped/>\n");
+              } else if (item.getStatus() > 0 || item.getStatus() < 2) {
+                writeSystemOut(fw, item);
+                fw.write("<system-err/>\n");
               }
-
               fw.write("</testcase>\n");
             }
             fw.write("</testsuite>\n");
           }
+        } catch (IOException e) {
+          throw new ConversionException("Error in creating JUnit XML file.", e);
         } finally {
           fw.close();
         }
@@ -337,11 +337,40 @@ public class TestCompleteInputMetric extends InputMetric {
     }
   }
 
+  private void writeSystemOut(OutputStreamWriter fw, TCLogItem item) throws IOException {
+    fw.write("<system-out><![CDATA[\n");
+    fw.write("[" + MyUtils.convertTc2DateTime(item.getTestTimeInMilliSec()) + "] ** " + item.getType() + " ** " + item.getMessage() + "\n");
+    if (!item.getCallStack().isEmpty()) {
+      writeCallStack(fw, item);
+    }
+    if (!item.getInfo().isEmpty()) {
+      fw.write("Additional Info:\n");
+      fw.write(htmlEscape(item.getInfo()));
+      fw.write("\n");
+    }
+    fw.write("]]></system-out>\n");
+  }
+
+  private void writeCallStack(OutputStreamWriter fw, TCLogItem item) throws IOException {
+    fw.write("Call Stack:\n");
+    List list = item.getCallStack();
+    for (int i = 0; i < list.size(); i++) {
+      HashMap<String, String> m = (HashMap<String, String>) list.get(i);
+      fw.write("    " + m.get("Line") + ": ");
+      if (!m.get("Unit").isEmpty()) {
+        fw.write(m.get("Unit") + ".");
+      }
+      fw.write(m.get("Test"));
+      fw.write("\n");
+    }
+    fw.write("\n");
+  }
+
   /**
    * makes String HTML conform
    *
-   * @param str
-   * @return
+   * @param str String to be converted
+   * @return HTML conform String
    */
   private String htmlEscape(String str) {
     return str.replaceAll("&", "&amp;").replaceAll("\"", "&quot;").replaceAll("'", "&#39;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");

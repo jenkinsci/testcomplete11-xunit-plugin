@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:fo="http://www.w3.org/1999/XSL/Format"
+           xmlns:fn="http://www.w3.org/2005/xpath-functions"
+           xmlns:xdt="http://www.w3.org/2005/xpath-datatypes" name="TC11-testScriptTestProject" tests="4" failures="1" skipped="0" timestamp="2017-01-10T17:51:53.672" time="0">
+<testcase classname="TC11-testScriptTestProject.TestScriptProject.Script Test Log [Unit1\ST1]" name="Test Log" time="0">
+<system-out><![CDATA[
+[2017-01-10T17:51:53.862] ** Message ** Informative message
+]]></system-out>
+<system-err/>
+</testcase>
+<testcase classname="TC11-testScriptTestProject.TestScriptProject.Script Test Log [Unit1\ST3]" name="Test Log" time="0">
+<failure message="Error message"></failure>
+<system-out><![CDATA[
+[2017-01-10T17:51:53.971] ** Error ** Error message
+
+Call Stack:
+    14: Unit1.ST3
+
+]]></system-out>
+<system-err/>
+</testcase>
+<testcase classname="TC11-testScriptTestProject.TestScriptProject.Script Test Log [Unit1\ST2]" name="Test Log" time="0">
+<system-out><![CDATA[
+[2017-01-10T17:51:53.911] ** Warning ** Warning message
+]]></system-out>
+<system-err/>
+</testcase>
+<testcase classname="TC11-testScriptTestProject.TestScriptProject.Script Test Log [Unit1\ST4]" name="Test Log" time="0">
+<system-out><![CDATA[
+[2017-01-10T17:51:53.994] ** Event ** Event Message
+]]></system-out>
+<system-err/>
+</testcase>
+</testsuite>

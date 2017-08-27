@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:fo="http://www.w3.org/1999/XSL/Format"
+           xmlns:fn="http://www.w3.org/2005/xpath-functions"
+           xmlns:xdt="http://www.w3.org/2005/xpath-datatypes" name="TC11-testSingleKeywordTest" tests="1" failures="1" skipped="0" timestamp="2017-01-10T16:29:32.000" time="0">
+<testcase classname="TC11-testSingleKeywordTest.Keyword Test Log [KT3].Keyword Test Log [KT3]" name="Test Log" time="0">
+<failure message="Error message"></failure>
+<system-out><![CDATA[
+[2017-01-10T17:29:32.188] ** Error ** Error message
+
+Call Stack:
+    1: KT3()
+
+]]></system-out>
+<system-err/>
+</testcase>
+</testsuite>
