@@ -1,6 +1,7 @@
 /**
  * The MIT License
  * Copyright (c) 2017 Michael Gärtner and all contributors
+ * Original Copyright (c) 2015 Fernando Miguélez Palomo and all contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,45 +24,44 @@
 package jenkins.plugins.xunit.tc11.mht;
 
 /**
- * Class to parse header of an MHT entry. Sample header of an entry produced by
- * TestComplete:
- * 
+ * Class to parse header of an MHT entry. Sample header of an entry produced by TestComplete:
+ *
  * <pre>
- * 
+ *
  * Content-Type: image/gif
  * Content-Transfer-Encoding: base64
  * Content-Location: http://localhost/init_c4050f0f.gif
- * 
+ *
  * </pre>
- * 
+ *
  * @author Michael Gärtner
  *
  */
 public class MHTEntry {
-	private String name;
-	private String contentType;
 
-	protected MHTEntry(String name, String contentType) {
-		this.name = name;
-		this.contentType = contentType;
-	}
+  private String name;
+  private String contentType;
 
-	/**
-	 * Returns the name of this entry, considering it the part of the entry
-	 * location without the base URL indicated in the header of the MHT file.
-	 * 
-	 * @return the name of the entry
-	 */
-	public String getName() {
-		return name;
-	}
+  protected MHTEntry(String name, String contentType) {
+    this.name = name;
+    this.contentType = contentType;
+  }
 
-	/**
-	 * Returns the content type of this entry.
-	 * 
-	 * @return the content type of the entry.
-	 */
-	public String getContentType() {
-		return contentType;
-	}
+  /**
+   * Returns the name of this entry, considering it the part of the entry location without the base URL indicated in the header of the MHT file.
+   *
+   * @return the name of the entry
+   */
+  public String getName() {
+    return name;
+  }
+
+  /**
+   * Returns the content type of this entry.
+   *
+   * @return the content type of the entry.
+   */
+  public String getContentType() {
+    return contentType;
+  }
 }

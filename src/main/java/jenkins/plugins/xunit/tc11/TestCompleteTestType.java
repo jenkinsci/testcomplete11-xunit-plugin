@@ -1,6 +1,7 @@
 /**
  * The MIT License
  * Copyright (c) 2017 Michael Gärtner and all contributors
+ * Original Copyright (c) 2015 Fernando Miguélez Palomo and all contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,37 +30,37 @@ import org.jenkinsci.lib.dtkit.type.TestType;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 /**
- * 
+ *
  * @author Michael Gärtner
  *
  */
 public class TestCompleteTestType extends TestType {
 
-    /**
-	 * 
-	 */
-    private static final long serialVersionUID = -8695240210666787247L;
+  /**
+   *
+   */
+  private static final long serialVersionUID = -8695240210666787247L;
 
-    String testFilterPattern;
+  String testFilterPattern;
 
-    @DataBoundConstructor
-    public TestCompleteTestType(String pattern, boolean failedIfNotNew, boolean deleteOutputFiles,
-            boolean stopProcessingIfError, String testFilterPattern) {
-        super(pattern, failedIfNotNew, deleteOutputFiles, stopProcessingIfError);
-        this.testFilterPattern = testFilterPattern;
+  @DataBoundConstructor
+  public TestCompleteTestType(String pattern, boolean failedIfNotNew, boolean deleteOutputFiles,
+    boolean stopProcessingIfError, String testFilterPattern) {
+    super(pattern, failedIfNotNew, deleteOutputFiles, stopProcessingIfError);
+    this.testFilterPattern = testFilterPattern;
+  }
+
+  @Override
+  public TestTypeDescriptor<?> getDescriptor() {
+    return new TestCompleteTestType.DescriptorImpl();
+  }
+
+  @Extension
+  public static class DescriptorImpl extends TestTypeDescriptor<TestCompleteTestType> {
+
+    public DescriptorImpl() {
+      super(TestCompleteTestType.class, TestCompleteInputMetric.class);
     }
-
-    @Override
-    public TestTypeDescriptor<?> getDescriptor() {
-        return new TestCompleteTestType.DescriptorImpl();
-    }
-
-    @Extension
-    public static class DescriptorImpl extends TestTypeDescriptor<TestCompleteTestType> {
-
-        public DescriptorImpl() {
-            super(TestCompleteTestType.class, TestCompleteInputMetric.class);
-        }
-    }
+  }
 
 }

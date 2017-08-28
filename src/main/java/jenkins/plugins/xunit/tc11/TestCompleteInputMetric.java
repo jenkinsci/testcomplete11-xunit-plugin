@@ -1,6 +1,7 @@
 /**
  * The MIT License
  * Copyright (c) 2017 Michael Gärtner and all contributors
+ * Original Copyright (c) 2015 Fernando Miguélez Palomo and all contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,14 +46,10 @@ import org.jenkinsci.plugins.xunit.types.model.JUnitModel;
 import org.json.JSONObject;
 
 import com.google.common.io.Files;
-import java.io.FileWriter;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import javax.annotation.RegEx;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 
@@ -115,7 +112,7 @@ public class TestCompleteInputMetric extends InputMetric {
 
   @Override
   public String getToolVersion() {
-    return "12.x";
+    return "11.x-12.x";
   }
 
   protected void setTestFilterPattern(String testFilterPattern) {
@@ -164,9 +161,9 @@ public class TestCompleteInputMetric extends InputMetric {
 
       while ((entry = mis.getNextEntry()) != null) {
         if ((CONTENT_TYPE_PLAIN.equals(entry.getContentType())
-            || CONTENT_TYPE_JAVASCRIPT.equals(entry.getContentType())
-            || CONTENT_TYPE_OCTETSTREAM.equals(entry.getContentType()))
-            && (entry.getName().startsWith("_") || entry.getName().contains("test"))) {
+          || CONTENT_TYPE_JAVASCRIPT.equals(entry.getContentType())
+          || CONTENT_TYPE_OCTETSTREAM.equals(entry.getContentType()))
+          && (entry.getName().startsWith("_") || entry.getName().contains("test"))) {
           File out = new File(tempDir, entry.getName());
           boolean createNewFile = out.createNewFile();
           if (createNewFile) {
@@ -207,7 +204,7 @@ public class TestCompleteInputMetric extends InputMetric {
       Collection<File> jsFiles = FileUtils.listFiles(inputTempDir, FileFilterUtils.nameFileFilter("_root.js"), null);
       if (jsFiles.isEmpty()) {
         throw new ConversionException(
-            "Invalid TestComplete 11 or 12 MHT file '" + inputFile.getName() + "'. No '_root.js' found.");
+          "Invalid TestComplete 11 or 12 MHT file '" + inputFile.getName() + "'. No '_root.js' found.");
       }
 
       File rootJS = jsFiles.iterator().next();
@@ -225,7 +222,7 @@ public class TestCompleteInputMetric extends InputMetric {
            * test names.
            */
           throw new ConversionException("Invalid test filter pattern provided '" + this.testFilterPattern
-              + "'. Start (^) and end ($) line pattern symbols are not allowed.");
+            + "'. Start (^) and end ($) line pattern symbols are not allowed.");
         }
 
         infoSystemLogger("Applying test filter pattern '" + this.testFilterPattern + "' to TestComplete test: " + inputFile.getName());
@@ -286,9 +283,9 @@ public class TestCompleteInputMetric extends InputMetric {
           if (!tcLog.isEmpty()) {
             fw.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
             fw.write("<testsuite xmlns:xs=\"http://www.w3.org/2001/XMLSchema\""
-                + " xmlns:fo=\"http://www.w3.org/1999/XSL/Format\""
-                + " xmlns:fn=\"http://www.w3.org/2005/xpath-functions\""
-                + " xmlns:xdt=\"http://www.w3.org/2005/xpath-datatypes\"");
+              + " xmlns:fo=\"http://www.w3.org/1999/XSL/Format\""
+              + " xmlns:fn=\"http://www.w3.org/2005/xpath-functions\""
+              + " xmlns:xdt=\"http://www.w3.org/2005/xpath-datatypes\"");
             fw.write(" name=\"" + htmlEscape(this.fileName_) + "\"");
             fw.write(" tests=\"" + tcLog.getTestCount() + "\"");
             fw.write(" failures=\"" + tcLog.getFailures() + "\"");
