@@ -71,13 +71,13 @@ public class TestCompleteTest extends AbstractXUnitXSLTest {
         "TC11-testSingleScriptTest.mht", "JUnit-TC11-testSingleScriptTest.xml");
   }
 
-  @Ignore
   @Test
   public void testParameters() throws Exception {
 
     Map<String, Object> params = new HashMap<String, Object>();
-    // Filter out KT3 and ST3 tests from result using external parameter
+    // Filter out KT3, ST3, KT4 and ST4 tests from result using external parameter
     // "testPattern"
+    // Display only KT1, KT2, ST1 and ST2 tests as result
     params.put(TestCompleteInputMetric.PARAM_TEST_PATTERN, ".*T[12]");
 
     convertAndValidate(TestCompleteInputMetric.class,

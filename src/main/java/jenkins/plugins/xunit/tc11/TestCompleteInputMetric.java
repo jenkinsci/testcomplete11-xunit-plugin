@@ -50,6 +50,8 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
 
@@ -161,9 +163,9 @@ public class TestCompleteInputMetric extends InputMetric {
 
       while ((entry = mis.getNextEntry()) != null) {
         if ((CONTENT_TYPE_PLAIN.equals(entry.getContentType())
-          || CONTENT_TYPE_JAVASCRIPT.equals(entry.getContentType())
-          || CONTENT_TYPE_OCTETSTREAM.equals(entry.getContentType()))
-          && (entry.getName().startsWith("_") || entry.getName().contains("test"))) {
+            || CONTENT_TYPE_JAVASCRIPT.equals(entry.getContentType())
+            || CONTENT_TYPE_OCTETSTREAM.equals(entry.getContentType()))
+            && (entry.getName().startsWith("_") || entry.getName().contains("test"))) {
           File out = new File(tempDir, entry.getName());
           boolean createNewFile = out.createNewFile();
           if (createNewFile) {
@@ -204,7 +206,7 @@ public class TestCompleteInputMetric extends InputMetric {
       Collection<File> jsFiles = FileUtils.listFiles(inputTempDir, FileFilterUtils.nameFileFilter("_root.js"), null);
       if (jsFiles.isEmpty()) {
         throw new ConversionException(
-          "Invalid TestComplete 11 or 12 MHT file '" + inputFile.getName() + "'. No '_root.js' found.");
+            "Invalid TestComplete 11 or 12 MHT file '" + inputFile.getName() + "'. No '_root.js' found.");
       }
 
       File rootJS = jsFiles.iterator().next();
@@ -222,7 +224,7 @@ public class TestCompleteInputMetric extends InputMetric {
            * test names.
            */
           throw new ConversionException("Invalid test filter pattern provided '" + this.testFilterPattern
-            + "'. Start (^) and end ($) line pattern symbols are not allowed.");
+              + "'. Start (^) and end ($) line pattern symbols are not allowed.");
         }
 
         infoSystemLogger("Applying test filter pattern '" + this.testFilterPattern + "' to TestComplete test: " + inputFile.getName());
@@ -283,9 +285,9 @@ public class TestCompleteInputMetric extends InputMetric {
           if (!tcLog.isEmpty()) {
             fw.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
             fw.write("<testsuite xmlns:xs=\"http://www.w3.org/2001/XMLSchema\""
-              + " xmlns:fo=\"http://www.w3.org/1999/XSL/Format\""
-              + " xmlns:fn=\"http://www.w3.org/2005/xpath-functions\""
-              + " xmlns:xdt=\"http://www.w3.org/2005/xpath-datatypes\"");
+                + " xmlns:fo=\"http://www.w3.org/1999/XSL/Format\""
+                + " xmlns:fn=\"http://www.w3.org/2005/xpath-functions\""
+                + " xmlns:xdt=\"http://www.w3.org/2005/xpath-datatypes\"");
             fw.write(" name=\"" + htmlEscape(this.fileName_) + "\"");
             fw.write(" tests=\"" + tcLog.getTestCount() + "\"");
             fw.write(" failures=\"" + tcLog.getFailures() + "\"");
@@ -296,27 +298,31 @@ public class TestCompleteInputMetric extends InputMetric {
             fw.write(">\n");
             for (Iterator<TCLogItem> it = tcLog.getTCLogItems().iterator(); it.hasNext();) {
               TCLogItem item = it.next();
-              //TODO Add exclusion Pattern
-//              String testLogNamePattern = "[^ ]+ Test Log \\[[^\\\\]]+ \\]";
-//              if (item.getName().matches(testLogNamePattern)) {
-//
-//              }
-//
-              fw.write("<testcase");
-              fw.write(" classname=\"" + htmlEscape(this.fileName_) + "." + htmlEscape(tcLog.getName()) + "." + htmlEscape(item.getName()) + "\"");
-              fw.write(" name=\"" + htmlEscape(item.getCaption()) + "\"");
-              time = String.format("%d", (item.getRunTime() / 1000));
-              fw.write(" time=\"" + time + "\"");
-              fw.write(">\n");
-              if (item.getStatus() == 2 && item.getType().equals("Error")) {
-                fw.write("<failure message=\"" + htmlEscape(item.getMessage()) + "\"></failure>\n");
-                writeSystemOut(fw, item);
-                fw.write("<system-err/>\n");
-              } else if (item.getStatus() > 0 || item.getStatus() < 2) {
-                writeSystemOut(fw, item);
-                fw.write("<system-err/>\n");
+              String filterPattern = "[^\\]]+";
+              if (conversionParams != null && conversionParams.get(PARAM_TEST_PATTERN) != null) {
+                filterPattern = (String) conversionParams.get(PARAM_TEST_PATTERN);
               }
-              fw.write("</testcase>\n");
+              String regex = "[^ ]+ Test Log \\[(" + filterPattern + ")\\]";
+              Pattern p = Pattern.compile(regex);
+              Matcher m = p.matcher(item.getName());
+              if (m.matches()) {
+
+                fw.write("<testcase");
+                fw.write(" classname=\"" + htmlEscape(this.fileName_) + "." + htmlEscape(tcLog.getName()) + "." + htmlEscape(item.getName()) + "\"");
+                fw.write(" name=\"" + htmlEscape(item.getCaption()) + "\"");
+                time = String.format("%d", (item.getRunTime() / 1000));
+                fw.write(" time=\"" + time + "\"");
+                fw.write(">\n");
+                if (item.getStatus() == 2 && item.getType().equals("Error")) {
+                  fw.write("<failure message=\"" + htmlEscape(item.getMessage()) + "\"></failure>\n");
+                  writeSystemOut(fw, item);
+                  fw.write("<system-err/>\n");
+                } else if (item.getStatus() > 0 || item.getStatus() < 2) {
+                  writeSystemOut(fw, item);
+                  fw.write("<system-err/>\n");
+                }
+                fw.write("</testcase>\n");
+              }
             }
             fw.write("</testsuite>\n");
           }

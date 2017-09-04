@@ -3,30 +3,30 @@
            xmlns:fo="http://www.w3.org/1999/XSL/Format"
            xmlns:fn="http://www.w3.org/2005/xpath-functions"
            xmlns:xdt="http://www.w3.org/2005/xpath-datatypes" name="TC11-testParameters" tests="8" failures="2" skipped="0" timestamp="2017-01-10T17:48:40.708" time="0">
-<testcase classname="TC11-testParameters.JenkinsTC11.Script Test Log [Unit1\ST1]" name="Test Log" time="0">
-<system-out><![CDATA[
-[10.01.2017 16:48:40] ** Message ** Informative message
+  <testcase classname="TC11-testParameters.JenkinsTC11.Script Test Log [Unit1\ST1]" name="Test Log" time="0">
+    <system-out><![CDATA[
+[2017-01-10T17:48:40.743] ** Message ** Informative message
 ]]></system-out>
-<system-err/>
-</testcase>
-<testcase classname="TC11-testParameters.JenkinsTC11.Script Test Log [Unit1\ST2]" name="Test Log" time="0">
-<system-out><![CDATA[
-[10.01.2017 16:48:40] ** Warning ** Warning message
+    <system-err/>
+  </testcase>
+  <testcase classname="TC11-testParameters.JenkinsTC11.Script Test Log [Unit1\ST2]" name="Test Log" time="0">
+    <system-out><![CDATA[
+[2017-01-10T17:48:40.750] ** Warning ** Warning message
 ]]></system-out>
-<system-err/>
-</testcase>
-<testcase classname="TC11-testParameters.JenkinsTC11.Keyword Test Log [KT2]" name="Test Log" time="0">
-<system-out><![CDATA[
-[10.01.2017 16:48:40] ** Warning ** Warning message
+    <system-err/>
+  </testcase>
+  <testcase classname="TC11-testParameters.JenkinsTC11.Keyword Test Log [KT2]" name="Test Log" time="0">
+    <system-out><![CDATA[
+[2017-01-10T17:48:40.386] ** Warning ** Warning message
 
 ]]></system-out>
-<system-err/>
-</testcase>
-<testcase classname="TC11-testParameters.JenkinsTC11.Keyword Test Log [KT1]" name="Test Log" time="0">
-<system-out><![CDATA[
-[10.01.2017 16:48:40] ** Message ** Informative message
+    <system-err/>
+  </testcase>
+  <testcase classname="TC11-testParameters.JenkinsTC11.Keyword Test Log [KT1]" name="Test Log" time="0">
+    <system-out><![CDATA[
+[2017-01-10T17:48:40.310] ** Message ** Informative message
 
 ]]></system-out>
-<system-err/>
-</testcase>
+    <system-err/>
+  </testcase>
 </testsuite>
