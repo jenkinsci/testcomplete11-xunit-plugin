@@ -1,4 +1,5 @@
 /target/
 /work/
-nb-configuration.xml
+/nb-configuration.xml
 /nbproject/
+/nbactions.xml
