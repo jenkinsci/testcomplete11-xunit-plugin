@@ -31,7 +31,7 @@ THE SOFTWARE.
   </parent>
   <artifactId>testcomplete11-xunit</artifactId>
   <packaging>hpi</packaging>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0</version>
   <!-- get every artifact through repo.jenkins-ci.org, which proxies all the
   artifacts that we need -->
   <name>TestComplete 11 xUnit Plugin</name>
@@ -60,7 +60,7 @@ THE SOFTWARE.
     <url>https://github.com/jenkinsci/testcomplete11-xunit-plugin.git</url>
     <connection>scm:git:git@github.com:jenkinsci/testcomplete11-xunit-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:jenkinsci/testcomplete11-xunit-plugin.git</developerConnection>
-    <tag>HEAD</tag>
+    <tag>testcomplete11-xunit-1.0</tag>
   </scm>
   <properties>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
