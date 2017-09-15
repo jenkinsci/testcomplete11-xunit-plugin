@@ -72,8 +72,8 @@ THE SOFTWARE.
     <mockito.version>1.8.5</mockito.version>
   </properties>
   <scm>
-    <connection>scm:git:git//github.com/jenkinsci/testcomplete11-xunit-plugin.git</connection>
-    <developerConnection>scm:git:git@github.com:jenkinsci/testcomplete11-xunit-plugin.git</developerConnection>
+    <connection>scm:git:ssh//git@github.com:jenkinsci/testcomplete11-xunit-plugin.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com:jenkinsci/testcomplete11-xunit-plugin.git</developerConnection>
     <tag>HEAD</tag>
   </scm>
   <dependencies>
