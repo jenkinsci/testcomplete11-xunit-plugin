@@ -58,8 +58,8 @@ THE SOFTWARE.
   <!-- Final location -->
   <scm>
     <url>https://github.com/jenkinsci/testcomplete11-xunit-plugin.git</url>
-    <connection>scm:git:ssh://git@github.com/jenkinsci/testcomplete11-xunit-plugin.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com/jenkinsci/testcomplete11-xunit-plugin.git</developerConnection>
+    <connection>scm:git:git@github.com:jenkinsci/testcomplete11-xunit-plugin.git</connection>
+    <developerConnection>scm:git:git@github.com:jenkinsci/testcomplete11-xunit-plugin.git</developerConnection>
     <tag>testcomplete11-xunit-1.0</tag>
   </scm>
   <properties>
