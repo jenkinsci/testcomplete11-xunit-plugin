@@ -72,8 +72,8 @@ THE SOFTWARE.
     <mockito.version>1.8.5</mockito.version>
   </properties>
   <scm>
-    <connection>scm:git:ssh://mgaert@github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
-    <developerConnection>scm:git:ssh://mgaert@github.com/jenkinsci/${project.artifactId}-plugin.git</developerConnection>
+    <connection>scm:git:ssh://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/jenkinsci/${project.artifactId}-plugin.git</developerConnection>
     <url>https://github.com/jenkinsci/${project.artifactId}-plugin</url>
     <tag>HEAD</tag>
   </scm>
