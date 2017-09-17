@@ -32,11 +32,13 @@ THE SOFTWARE.
   <artifactId>testcomplete11-xunit</artifactId>
   <packaging>hpi</packaging>
   <version>1.2-SNAPSHOT</version>
+
   <!-- get every artifact through repo.jenkins-ci.org, which proxies all the
   artifacts that we need -->
   <name>TestComplete 11 xUnit Plugin</name>
   <description>Jenkins plugin that transforms TestComplete 11 and 12 MHT reports into xUnit format</description>
   <url>https://wiki.jenkins.io/display/JENKINS/TestComplete+11+and+12+xUnit+Plugin</url>
+  <inceptionYear>2017</inceptionYear>
   <licenses>
     <license>
       <name>MIT license</name>
@@ -66,7 +68,6 @@ THE SOFTWARE.
     <maven.compiler.target>1.6</maven.compiler.target>
     <xunit.plugin.version>1.90</xunit.plugin.version>
     <json.plugin.version>20170516</json.plugin.version>
-    <junit.version>4.12</junit.version>
     <xmlunit.version>1.3</xmlunit.version>
     <saxon.version>9.1.0.8</saxon.version>
     <mockito.version>1.8.5</mockito.version>
@@ -111,7 +112,6 @@ THE SOFTWARE.
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -127,14 +127,6 @@ THE SOFTWARE.
       <scope>test</scope>
     </dependency>
   </dependencies>
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.jenkins-ci.tools</groupId>
-        <artifactId>maven-hpi-plugin</artifactId>
-      </plugin>
-    </plugins>
-  </build>
   <repositories>
     <repository>
       <id>repo.jenkins-ci.org</id>
