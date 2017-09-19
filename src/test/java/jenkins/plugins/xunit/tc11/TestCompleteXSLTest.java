@@ -1,7 +1,6 @@
 /**
  * The MIT License
- *
- * Copyright (c) 2017 Michael Gärtner and all contributors
+ * Copyright (c) 2015 Fernando Miguélez Palomo and all contributors
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,57 +27,53 @@ import java.util.Map;
 
 import org.junit.Test;
 
-public class TestCompleteTest extends AbstractXUnitXSLTest {
+public class TestCompleteXSLTest extends AbstractXUnitXSLTest {
 
   @Test
   public void testKeywordTestProject() throws Exception {
     convertAndValidate(TestCompleteInputMetric.class,
-      "TC11-testKeywordTestProject.mht",
-      "JUnit-TC11-testKeywordTestProject.xml");
+      "TC-testKeywordTestProject.mht",
+      "JUnit-testKeywordTestProject.xml");
   }
 
   @Test
   public void testScriptTestProject() throws Exception {
     convertAndValidate(TestCompleteInputMetric.class,
-      "TC11-testScriptTestProject.mht",
-      "JUnit-TC11-testScriptTestProject.xml");
+      "TC-testScriptTestProject.mht",
+      "JUnit-testScriptTestProject.xml");
   }
 
   @Test
-  public void testProjectSuiteTC11() throws Exception {
+  public void testProjectSuite() throws Exception {
     convertAndValidate(TestCompleteInputMetric.class,
-      "TC11-testProjectSuite.mht", "JUnit-TC11-testProjectSuite.xml");
-  }
-
-  @Test
-  public void testProjectSuiteTC12() throws Exception {
-    convertAndValidate(TestCompleteInputMetric.class,
-      "TC12-testProjectSuite.mht", "JUnit-TC12-testProjectSuite.xml");
+      "TC-testProjectSuite.mht", "JUnit-testProjectSuite.xml");
   }
 
   @Test
   public void testSingleKeywordTest() throws Exception {
     convertAndValidate(TestCompleteInputMetric.class,
-      "TC11-testSingleKeywordTest.mht",
-      "JUnit-TC11-testSingleKeywordTest.xml");
+      "TC-testSingleKeywordTest.mht",
+      "JUnit-testSingleKeywordTest.xml");
   }
 
   @Test
   public void testSingleScriptTest() throws Exception {
     convertAndValidate(TestCompleteInputMetric.class,
-      "TC11-testSingleScriptTest.mht", "JUnit-TC11-testSingleScriptTest.xml");
+      "TC-testSingleScriptTest.mht", "JUnit-testSingleScriptTest.xml");
   }
 
   @Test
   public void testParameters() throws Exception {
 
     Map<String, Object> params = new HashMap<>();
-    // Filter out KT3, ST3, KT4 and ST4 tests from result using external parameter
+    // Filter out KT3 and ST3 tests from result using external parameter
     // "testPattern"
-    // Display only KT1, KT2, ST1 and ST2 tests as result
     params.put(TestCompleteInputMetric.PARAM_TEST_PATTERN, ".*T[12]");
 
+    // Internal parameter "baseUrl" for this tests is "http://mySite/"
+    // instead of
+    // default "http://localhost/"
     convertAndValidate(TestCompleteInputMetric.class,
-      "TC11-testParameters.mht", "JUnit-TC11-testParameters.xml", params);
+      "TC-testParameters.mht", "JUnit-testParameters.xml", params);
   }
 }

@@ -37,9 +37,12 @@ import java.util.logging.Logger;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
-import org.jenkinsci.lib.dtkit.model.InputMetric;
 import org.jenkinsci.lib.dtkit.model.InputType;
+import org.jenkinsci.lib.dtkit.model.InputMetricXSL;
 import org.jenkinsci.lib.dtkit.model.OutputMetric;
+import org.jenkinsci.lib.dtkit.util.converter.ConversionService;
+import org.jenkinsci.lib.dtkit.util.validator.ValidationException;
+import org.jenkinsci.lib.dtkit.util.validator.ValidationService;
 import org.jenkinsci.lib.dtkit.util.converter.ConversionException;
 import org.jenkinsci.plugins.xunit.types.model.JUnitModel;
 
@@ -61,8 +64,6 @@ import jenkins.plugins.xunit.tc11.json.TCLogItem;
 
 import jenkins.plugins.xunit.tc11.mht.*;
 import org.apache.commons.io.FileExistsException;
-import org.jenkinsci.lib.dtkit.util.validator.ValidationException;
-import org.jenkinsci.lib.dtkit.util.validator.ValidationService;
 
 /**
  *
@@ -70,7 +71,7 @@ import org.jenkinsci.lib.dtkit.util.validator.ValidationService;
  *
  *
  */
-public class TestCompleteInputMetric extends InputMetric {
+public class TestCompleteInputMetric extends InputMetricXSL {
 
   /**
    *
@@ -81,6 +82,7 @@ public class TestCompleteInputMetric extends InputMetric {
   private final static String CONTENT_TYPE_OCTETSTREAM = "application/octet-stream";
   private final static String CONTENT_TYPE_PLAIN = "text/plain";
   private final static String CONTENT_TYPE_JAVASCRIPT = "application/javascript";
+  private final static String CONTENT_TYPE_XML = "text/xml";
   /**
    * Base URL links inside MHT and XML files refer to
    */
@@ -115,6 +117,16 @@ public class TestCompleteInputMetric extends InputMetric {
   @Override
   public String getToolVersion() {
     return "11.x-12.x";
+  }
+
+  @Override
+  public String getXslName() {
+    return "testcomplete-10-to-junit-1.0.xsl";
+  }
+
+  @Override
+  public String[] getInputXsdNameList() {
+    return null;
   }
 
   protected void setTestFilterPattern(String testFilterPattern) {
@@ -162,10 +174,11 @@ public class TestCompleteInputMetric extends InputMetric {
       int readBytes;
 
       while ((entry = mis.getNextEntry()) != null) {
-        if ((CONTENT_TYPE_PLAIN.equals(entry.getContentType())
-            || CONTENT_TYPE_JAVASCRIPT.equals(entry.getContentType())
-            || CONTENT_TYPE_OCTETSTREAM.equals(entry.getContentType()))
-            && (entry.getName().startsWith("_") || entry.getName().contains("test"))) {
+        if ((CONTENT_TYPE_XML.equals(entry.getContentType()))
+          || ((CONTENT_TYPE_PLAIN.equals(entry.getContentType())
+          || CONTENT_TYPE_JAVASCRIPT.equals(entry.getContentType())
+          || CONTENT_TYPE_OCTETSTREAM.equals(entry.getContentType()))
+          && (entry.getName().startsWith("_") || entry.getName().contains("test")))) {
           File out = new File(tempDir, entry.getName());
           boolean createNewFile = out.createNewFile();
           if (createNewFile) {
@@ -200,16 +213,21 @@ public class TestCompleteInputMetric extends InputMetric {
     }
 
     try {
+      boolean isJSONPattern = false;
+      boolean isXMLPattern = false;
       inputTempDir = this.extractFilesFromMHTFile(inputFile, conversionParams);
       this.fileName_ = FilenameUtils.removeExtension(inputFile.getName());
 
       Collection<File> jsFiles = FileUtils.listFiles(inputTempDir, FileFilterUtils.nameFileFilter("_root.js"), null);
+      Collection<File> xmlFiles = FileUtils.listFiles(inputTempDir, FileFilterUtils.nameFileFilter("root.xml"), null);
       if (jsFiles.isEmpty()) {
-        throw new ConversionException(
-            "Invalid TestComplete 11 or 12 MHT file '" + inputFile.getName() + "'. No '_root.js' found.");
+        isJSONPattern = false;
+        if (!xmlFiles.isEmpty()) {
+          isXMLPattern = true;
+        }
+      } else {
+        isJSONPattern = true;
       }
-
-      File rootJS = jsFiles.iterator().next();
 
       /*
        * TODO We are unable to pass testFilterPattern as specified by user because
@@ -224,7 +242,7 @@ public class TestCompleteInputMetric extends InputMetric {
            * test names.
            */
           throw new ConversionException("Invalid test filter pattern provided '" + this.testFilterPattern
-              + "'. Start (^) and end ($) line pattern symbols are not allowed.");
+            + "'. Start (^) and end ($) line pattern symbols are not allowed.");
         }
 
         infoSystemLogger("Applying test filter pattern '" + this.testFilterPattern + "' to TestComplete test: " + inputFile.getName());
@@ -232,7 +250,26 @@ public class TestCompleteInputMetric extends InputMetric {
         conversionParams.put(PARAM_TEST_PATTERN, this.testFilterPattern);
       }
 
-      this.convertJson(inputTempDir, rootJS, outFile, conversionParams);
+      if (isJSONPattern) {
+        File rootJS = jsFiles.iterator().next();
+        this.convertJson(inputTempDir, rootJS, outFile, conversionParams);
+      } else if (isXMLPattern) {
+        File rootXML = xmlFiles.iterator().next();
+        ConversionService conversionService = new ConversionService();
+        if (getXslFile() == null) {
+          conversionService.convert(new StreamSource(this
+            .getXslResourceClass()
+            .getResourceAsStream(getXslName())), rootXML, outFile,
+            conversionParams);
+        } else {
+          conversionService.convert(getXslFile(), rootXML, outFile,
+            conversionParams);
+        }
+      } else {
+        // Wrong Pattern
+        throw new ConversionException(
+          "Invalid TestComplete MHT file '" + inputFile.getName() + "'. No '_root.js' or 'root.xml' found.");
+      }
 
     } catch (IOException e) {
       throw new ConversionException("Errors parsing input MHT file '" + inputFile.getName() + "'", e);
@@ -285,9 +322,9 @@ public class TestCompleteInputMetric extends InputMetric {
           if (!tcLog.isEmpty()) {
             fw.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
             fw.write("<testsuite xmlns:xs=\"http://www.w3.org/2001/XMLSchema\""
-                + " xmlns:fo=\"http://www.w3.org/1999/XSL/Format\""
-                + " xmlns:fn=\"http://www.w3.org/2005/xpath-functions\""
-                + " xmlns:xdt=\"http://www.w3.org/2005/xpath-datatypes\"");
+              + " xmlns:fo=\"http://www.w3.org/1999/XSL/Format\""
+              + " xmlns:fn=\"http://www.w3.org/2005/xpath-functions\""
+              + " xmlns:xdt=\"http://www.w3.org/2005/xpath-datatypes\"");
             fw.write(" name=\"" + htmlEscape(this.fileName_) + "\"");
             fw.write(" tests=\"" + tcLog.getTestCount() + "\"");
             fw.write(" failures=\"" + tcLog.getFailures() + "\"");
@@ -340,6 +377,13 @@ public class TestCompleteInputMetric extends InputMetric {
     }
   }
 
+  /**
+   * Helper for generating a <code><system-out></code> Tag
+   *
+   * @param fw
+   * @param item
+   * @throws IOException
+   */
   private void writeSystemOut(OutputStreamWriter fw, TCLogItem item) throws IOException {
     fw.write("<system-out><![CDATA[\n");
     fw.write("[" + MyUtils.convertTc2DateTime(item.getTestTimeInMilliSec()) + "] ** " + item.getType() + " ** " + item.getMessage() + "\n");
@@ -354,6 +398,13 @@ public class TestCompleteInputMetric extends InputMetric {
     fw.write("]]></system-out>\n");
   }
 
+  /**
+   * Helper for generating a the call stack content of the system-out tag
+   *
+   * @param fw
+   * @param item
+   * @throws IOException
+   */
   private void writeCallStack(OutputStreamWriter fw, TCLogItem item) throws IOException {
     fw.write("Call Stack:\n");
     List list = item.getCallStack();
@@ -412,6 +463,7 @@ public class TestCompleteInputMetric extends InputMetric {
    *
    * @return the relative xsd path. Can be null if there no XSD for the output format
    */
+  @Override
   public String[] getOutputXsdNameList() {
     if (getOutputFormatType() == null) {
       return null;

@@ -102,7 +102,7 @@ public class MHTTest {
 
             fis.read(expectedBuffer, 0, readBytes);
             Assert.assertArrayEquals("Extracted entry '" + entry.getName() + "' does not have expected content.",
-                expectedBuffer, readBuffer);
+              expectedBuffer, readBuffer);
 
           }
         } finally {
@@ -133,7 +133,7 @@ public class MHTTest {
 
       Assert.assertNotNull("Read without entry seek should have failed", e);
       Assert.assertEquals("Bad error type", MHTException.class,
-          e.getClass());
+        e.getClass());
     } finally {
       is.close();
     }
@@ -152,10 +152,10 @@ public class MHTTest {
     try {
       for (int i = 0; i < UNSUPPORTED_METHODS.length; i++) {
         Method m = UNSUPPORTED_METHOD_ARG_TYPES[i] != null
-            ? MHTInputStream.class
-                .getMethod(UNSUPPORTED_METHODS[i], UNSUPPORTED_METHOD_ARG_TYPES[i])
-            : MHTInputStream.class
-                .getMethod(UNSUPPORTED_METHODS[i]);
+          ? MHTInputStream.class
+            .getMethod(UNSUPPORTED_METHODS[i], UNSUPPORTED_METHOD_ARG_TYPES[i])
+          : MHTInputStream.class
+            .getMethod(UNSUPPORTED_METHODS[i]);
         Throwable e = null;
         try {
           if (UNSUPPORTED_METHOD_ARGS[i] != null) {
@@ -168,9 +168,9 @@ public class MHTTest {
         }
         Assert.assertNotNull("Method '" + UNSUPPORTED_METHODS[i] + "' should have failed", e);
         Assert
-            .assertEquals("Method '" + UNSUPPORTED_METHODS[i] + "' should not be supported",
-                UnsupportedOperationException.class,
-                e.getClass());
+          .assertEquals("Method '" + UNSUPPORTED_METHODS[i] + "' should not be supported",
+            UnsupportedOperationException.class,
+            e.getClass());
       }
     } finally {
       is.close();
@@ -180,19 +180,19 @@ public class MHTTest {
   @Test
   public void testBadHeader() throws Exception {
     this.testFail("MHTTest11-testBadHeaderBoundary.mht", null, MHTException.class,
-        "Error parsing MHT header");
+      "Error parsing MHT header");
 
     this.testFail("MHTTest11-testBadHeaderUrl.mht", null, MHTException.class,
-        "Error parsing MHT header");
+      "Error parsing MHT header");
   }
 
   @Test
   public void testBadEntry() throws Exception {
     this.testFail("MHTTest11-testBadEntryUrl.mht", null, MHTException.class,
-        "Invalid entry header. Content location is not relative to base URL (http://localhost/): http://my.own.corrupt.url/index.htm");
+      "Invalid entry header. Content location is not relative to base URL (http://localhost/): http://my.own.corrupt.url/index.htm");
 
     this.testFail("MHTTest11-testBadEntryEncoding.mht", "mytext.txt", MHTException.class,
-        "Unsupported encoding for entry 'mytext.txt' found (only 'base64' is supported): quoted-printable");
+      "Unsupported encoding for entry 'mytext.txt' found (only 'base64' is supported): quoted-printable");
 
     /*
      * Comment out if causes problems on other systems. Tested on MacOSX 10.6.8 with
@@ -202,11 +202,11 @@ public class MHTTest {
      * versions (and JAXB implementations) this error may not be the same.
      */
     this.testFail("MHTTest11-testBadEntryData.mht", "index.htm", ArrayIndexOutOfBoundsException.class,
-        null);
+      null);
   }
 
   private void testFail(String mhtFile, String entryName, Class<? extends Exception> expectedErrorType,
-      String expectedMessage) throws Exception {
+    String expectedMessage) throws Exception {
     MHTInputStream is = null;
     Exception e = null;
 
