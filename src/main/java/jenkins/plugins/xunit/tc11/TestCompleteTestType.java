@@ -44,9 +44,9 @@ public class TestCompleteTestType extends TestType {
   String testFilterPattern;
 
   @DataBoundConstructor
-  public TestCompleteTestType(String pattern, boolean failedIfNotNew, boolean deleteOutputFiles,
-    boolean stopProcessingIfError, String testFilterPattern) {
-    super(pattern, failedIfNotNew, deleteOutputFiles, stopProcessingIfError);
+  public TestCompleteTestType(String pattern, boolean skipNoTestFiles, boolean failedIfNotNew, boolean deleteOutputFiles,
+      boolean stopProcessingIfError, String testFilterPattern) {
+    super(pattern, skipNoTestFiles, failedIfNotNew, deleteOutputFiles, stopProcessingIfError);
     this.testFilterPattern = testFilterPattern;
   }
 
